@@ -18,3 +18,12 @@ springdoc:
     path: /swagger-ui
     tags-sorter: alpha
     operations-sorter: method
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  jwt:
+    public-key: classpath:certs/public.pem
+    private-key: classpath:certs/private.pem
+    expiry-seconds: 3600 # 1 hour
+    refresh-expiry-seconds: 604800 # 7 days

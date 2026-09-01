@@ -3,6 +3,7 @@ package com.fullstack.online_couse_platform.service.impl;
 import com.fullstack.online_couse_platform.common.enums.InstructorStatus;
 import com.fullstack.online_couse_platform.common.enums.RoleType;
 import com.fullstack.online_couse_platform.common.enums.UserStatus;
+import com.fullstack.online_couse_platform.config.JwtProperties;
 import com.fullstack.online_couse_platform.dto.request.LoginRequest;
 import com.fullstack.online_couse_platform.dto.request.RegisterInstructorRequest;
 import com.fullstack.online_couse_platform.dto.request.RegisterLearnerRequest;
@@ -19,13 +20,18 @@ import com.fullstack.online_couse_platform.repository.InstructorRepository;
 import com.fullstack.online_couse_platform.repository.LearnerRepository;
 import com.fullstack.online_couse_platform.repository.RoleRepository;
 import com.fullstack.online_couse_platform.repository.UserRepository;
+import com.fullstack.online_couse_platform.security.JwtService;
 import com.fullstack.online_couse_platform.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -35,6 +41,10 @@ public class AuthServiceImpl implements AuthService {
     private final LearnerRepository learnerRepository;
     private final InstructorRepository instructorRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+    private final JwtProperties jwtProperties;
 
     @Override
     @Transactional
@@ -86,7 +96,7 @@ public class AuthServiceImpl implements AuthService {
 
         User user = User.builder()
                 .email(email)
-                .passwordHash(password)
+                .passwordHash(passwordEncoder.encode(password))
                 .role(role)
                 .status(UserStatus.ACTIVE)
                 .build();
@@ -97,18 +107,25 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS));
+        Authentication authentication = new UsernamePasswordAuthenticationToken(request.email(), request.password());
+        authentication = authenticationManager.authenticate(authentication);
 
-        if (!user.getPasswordHash().equals(request.password())) {
-            throw new AppException(ErrorCode.INVALID_CREDENTIALS);
-        }
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        String accessToken = jwtService.generateAccessToken(
+                user.getId(),
+                user.getEmail(),
+                user.getRole() != null ? user.getRole().getName() : null
+        );
+
+        String refreshToken = jwtService.generateRefreshToken(user.getId());
 
         return LoginResponse.builder()
-                .accessToken("mock-access-token-" + UUID.randomUUID())
-                .refreshToken("mock-refresh-token-" + UUID.randomUUID())
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .tokenType("Bearer")
-                .expiresIn(3600L)
+                .expiresIn(jwtProperties.getExpirySeconds())
                 .build();
     }
 }
