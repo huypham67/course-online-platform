@@ -1,6 +1,6 @@
 package com.fullstack.online_couse_platform.mapper;
 
-import com.fullstack.online_couse_platform.dto.response.InstructorProfileResponse;
+import com.fullstack.online_couse_platform.dto.response.InstructorResponse;
 import com.fullstack.online_couse_platform.model.Instructor;
 import com.fullstack.online_couse_platform.common.enums.RoleType;
 import com.fullstack.online_couse_platform.model.User;
@@ -11,7 +11,7 @@ import org.mapstruct.Named;
 import java.time.Instant;
 
 @Mapper(componentModel = "spring")
-public interface InstructorProfileMapper {
+public interface InstructorMapper {
 
     @Mapping(target = "id", source = "instructor.user.id", qualifiedByName = "uuidToString")
     @Mapping(target = "email", source = "instructor.user.email")
@@ -25,7 +25,7 @@ public interface InstructorProfileMapper {
     @Mapping(target = "instructorStatus", source = "instructor.status")
     @Mapping(target = "createdAt", source = "instructor.user.createdAt", qualifiedByName = "instantToString")
     @Mapping(target = "updatedAt", source = "instructor.user.updatedAt", qualifiedByName = "instantToString")
-    InstructorProfileResponse toInstructorProfileResponse(Instructor instructor);
+    InstructorResponse toInstructorResponse(Instructor instructor);
 
     @Named("uuidToString")
     default String uuidToString(java.util.UUID uuid) {

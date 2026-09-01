@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
 @Builder
-public record UpdateInstructorProfileRequest(
+public record UpdateInstructorRequest(
     @Size(max = 150, message = "Full name must not exceed 150 characters")
     String fullName,
 
