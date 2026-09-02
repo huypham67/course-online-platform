@@ -19,9 +19,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
+@Slf4j(topic = "AUTH-SERVICE")
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
@@ -37,6 +37,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
+        log.info("User login succeeded: userId={}, email={}", user.getId(), user.getEmail());
         return tokenService.createTokenResponse(user);
     }
 
@@ -49,12 +50,15 @@ public class AuthServiceImpl implements AuthService {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
+        log.info("Refresh token rotation succeeded: userId={}", user.getId());
         return tokenService.createTokenResponse(user);
     }
 
     @Override
     @Transactional
     public void logout() {
-        tokenService.revokeActiveTokens(SecurityUtils.getCurrentUserId());
+        var userId = SecurityUtils.getCurrentUserId();
+        tokenService.revokeActiveTokens(userId);
+        log.info("User logged out: userId={}", userId);
     }
 }

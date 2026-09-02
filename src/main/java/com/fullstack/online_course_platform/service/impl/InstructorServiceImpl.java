@@ -16,6 +16,7 @@ import com.fullstack.online_course_platform.repository.UserRepository;
 import com.fullstack.online_course_platform.service.InstructorService;
 import com.fullstack.online_course_platform.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j(topic = "INSTRUCTOR-SERVICE")
 public class InstructorServiceImpl implements InstructorService {
 
     private final InstructorRepository instructorRepository;
@@ -44,6 +46,7 @@ public class InstructorServiceImpl implements InstructorService {
                 .status(InstructorStatus.PENDING)
                 .build();
         instructorRepository.save(instructor);
+        log.info("Instructor registered: userId={}, email={}, status={}", userResponse.id(), request.email(), InstructorStatus.PENDING);
         return userResponse;
     }
 
@@ -80,6 +83,7 @@ public class InstructorServiceImpl implements InstructorService {
         }
 
         Instructor updatedInstructor = instructorRepository.save(instructor);
+        log.info("Instructor profile updated: userId={}", userId);
         return instructorMapper.toInstructorResponse(updatedInstructor);
     }
 
@@ -95,6 +99,7 @@ public class InstructorServiceImpl implements InstructorService {
 
         instructor.setStatus(InstructorStatus.APPROVED);
         Instructor updatedInstructor = instructorRepository.save(instructor);
+        log.info("Instructor approved: instructorId={}", instructorId);
         return instructorMapper.toInstructorResponse(updatedInstructor);
     }
 
@@ -110,6 +115,7 @@ public class InstructorServiceImpl implements InstructorService {
 
         instructor.setStatus(InstructorStatus.REJECTED);
         Instructor updatedInstructor = instructorRepository.save(instructor);
+        log.info("Instructor rejected: instructorId={}", instructorId);
         return instructorMapper.toInstructorResponse(updatedInstructor);
     }
 }

@@ -10,6 +10,7 @@ import com.fullstack.online_course_platform.model.User;
 import com.fullstack.online_course_platform.repository.RefreshTokenRepository;
 import com.fullstack.online_course_platform.service.TokenService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -28,6 +29,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j(topic = "TOKEN-SERVICE")
 public class TokenServiceImpl implements TokenService {
 
     private static final String TOKEN_TYPE_CLAIM = "token_type";
@@ -54,6 +56,7 @@ public class TokenServiceImpl implements TokenService {
             var jwt = jwtDecoder.decode(refreshTokenValue);
             String tokenType = jwt.getClaimAsString(TOKEN_TYPE_CLAIM);
             if (!TokenType.REFRESH.name().equals(tokenType)) {
+                log.warn("Rejected token with invalid type: tokenType={}", tokenType);
                 throw new AppException(ErrorCode.INVALID_REFRESH_TOKEN);
             }
 
@@ -75,8 +78,10 @@ public class TokenServiceImpl implements TokenService {
             // 3. Đánh dấu token này đã được sử dụng (revoked) để ngăn chặn việc sử dụng lại.
             refreshToken.setRevokedAt(Instant.now());
             refreshTokenRepository.save(refreshToken);
+            log.info("Refresh token consumed: userId={}, tokenId={}", userId, tokenId);
             return refreshToken.getUser();
         } catch (JwtException | IllegalArgumentException exception) {
+            log.warn("Rejected invalid refresh token: reason={}", exception.getClass().getSimpleName());
             throw new AppException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
     }
@@ -85,6 +90,7 @@ public class TokenServiceImpl implements TokenService {
     @Transactional
     public void revokeActiveTokens(UUID userId) {
         refreshTokenRepository.revokeActiveTokensByUserId(userId, Instant.now());
+        log.info("Active refresh tokens revoked: userId={}", userId);
     }
 
     private String generateAccessToken(User user) {
@@ -122,6 +128,7 @@ public class TokenServiceImpl implements TokenService {
                 .tokenHash(hashToken(refreshTokenValue))
                 .expiresAt(expiresAt)
                 .build());
+            log.debug("Refresh token persisted: userId={}, tokenId={}, expiresAt={}", user.getId(), tokenId, expiresAt);
         return refreshTokenValue;
     }
 

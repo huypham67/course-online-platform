@@ -15,6 +15,7 @@ import com.fullstack.online_course_platform.repository.UserRepository;
 import com.fullstack.online_course_platform.service.LearnerService;
 import com.fullstack.online_course_platform.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j(topic = "LEARNER-SERVICE")
 public class LearnerServiceImpl implements LearnerService {
 
     private final LearnerRepository learnerRepository;
@@ -40,6 +42,7 @@ public class LearnerServiceImpl implements LearnerService {
                 .bio(request.bio())
                 .build();
         learnerRepository.save(learner);
+        log.info("Learner registered: userId={}, email={}", userResponse.id(), request.email());
         return userResponse;
     }
 
@@ -70,6 +73,7 @@ public class LearnerServiceImpl implements LearnerService {
         }
 
         Learner updatedLearner = learnerRepository.save(learner);
+        log.info("Learner profile updated: userId={}", userId);
         return learnerMapper.toLearnerResponse(updatedLearner);
     }
 }
