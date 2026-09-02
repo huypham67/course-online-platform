@@ -40,13 +40,9 @@ public class TokenServiceImpl implements TokenService {
     @Override
     @Transactional
     public TokenResponse createTokenResponse(User user) {
-        // Khi tạo token mới, thu hồi tất cả các refresh token hiện tại của người dùng để đảm bảo rằng chỉ có một refresh token hợp lệ tại một thời điểm.
-        refreshTokenRepository.revokeActiveTokensByUserId(user.getId(), Instant.now());
-
-        String refreshToken = generateRefreshToken(user);
         return TokenResponse.builder()
                 .accessToken(generateAccessToken(user))
-                .refreshToken(refreshToken)
+                .refreshToken(generateRefreshToken(user))
                 .build();
     }
 

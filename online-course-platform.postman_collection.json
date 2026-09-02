@@ -1,0 +1,272 @@
+{
+  "info": {
+    "_postman_id": "b9c3bb8a-7bdf-4bcf-9d3b-2a7d8c7a6d11",
+    "name": "Online Course Platform API",
+    "description": "Postman collection for the Online Course Platform APIs. Set baseUrl and credentials in the collection variables before running.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "learnerEmail", "value": "learner@example.com" },
+    { "key": "learnerPassword", "value": "Password123" },
+    { "key": "instructorEmail", "value": "instructor@example.com" },
+    { "key": "instructorPassword", "value": "Password123" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" },
+    { "key": "instructorId", "value": "replace-with-instructor-uuid" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register learner",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{learnerEmail}}\",\n  \"password\": \"{{learnerPassword}}\",\n  \"fullName\": \"Test Learner\",\n  \"avatarUrl\": \"https://example.com/learner.png\",\n  \"bio\": \"Learner test account\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/register/learner"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 201 Created', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Response has data', function () { pm.expect(pm.response.json().data).to.exist; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register instructor",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{instructorEmail}}\",\n  \"password\": \"{{instructorPassword}}\",\n  \"fullName\": \"Test Instructor\",\n  \"avatarUrl\": \"https://example.com/instructor.png\",\n  \"bio\": \"Instructor test account\",\n  \"expertise\": \"Backend development\",\n  \"experienceYears\": 5\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/register/instructor"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 201 Created', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Response has data', function () { pm.expect(pm.response.json().data).to.exist; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login learner",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{learnerEmail}}\",\n  \"password\": \"{{learnerPassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 200 OK', function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json().data;",
+                  "pm.expect(data.access_token).to.be.a('string').and.not.empty;",
+                  "pm.collectionVariables.set('accessToken', data.access_token);",
+                  "pm.collectionVariables.set('refreshToken', data.refresh_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"refresh_token\": \"{{refreshToken}}\"\n}" },
+            "url": "{{baseUrl}}/api/v1/auth/refresh"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 200 OK', function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json().data;",
+                  "pm.expect(data.access_token).to.be.a('string').and.not.empty;",
+                  "pm.collectionVariables.set('accessToken', data.access_token);",
+                  "pm.collectionVariables.set('refreshToken', data.refresh_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/api/v1/auth/logout"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 200 OK', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Learner",
+      "item": [
+        {
+          "name": "Get my learner profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/api/v1/learner/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.expect(pm.response.json().data).to.exist;"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update my learner profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Updated Test Learner\",\n  \"avatarUrl\": \"https://example.com/learner-updated.png\",\n  \"bio\": \"Updated learner bio\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/learner/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 200 OK', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Instructor",
+      "item": [
+        {
+          "name": "Get my instructor profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/api/v1/instructor/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.expect(pm.response.json().data).to.exist;"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update my instructor profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Updated Test Instructor\",\n  \"avatarUrl\": \"https://example.com/instructor-updated.png\",\n  \"bio\": \"Updated instructor bio\",\n  \"expertise\": \"Spring Boot and Java\",\n  \"experienceYears\": 6\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/instructor/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 200 OK', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Approve instructor (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/api/v1/instructor/admin/{{instructorId}}/approve"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 200 OK', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject instructor (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/api/v1/instructor/admin/{{instructorId}}/reject"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 200 OK', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

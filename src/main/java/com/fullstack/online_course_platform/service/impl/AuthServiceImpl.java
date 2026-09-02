@@ -29,7 +29,7 @@ public class AuthServiceImpl implements AuthService {
     private final TokenService tokenService;
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public TokenResponse login(LoginRequest request) {
         Authentication authentication = new UsernamePasswordAuthenticationToken(request.email(), request.password());
         authenticationManager.authenticate(authentication);
