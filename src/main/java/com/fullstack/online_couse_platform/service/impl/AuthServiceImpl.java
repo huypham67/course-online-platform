@@ -3,11 +3,11 @@ package com.fullstack.online_couse_platform.service.impl;
 import com.fullstack.online_couse_platform.common.enums.InstructorStatus;
 import com.fullstack.online_couse_platform.common.enums.RoleType;
 import com.fullstack.online_couse_platform.common.enums.UserStatus;
-import com.fullstack.online_couse_platform.config.JwtProperties;
 import com.fullstack.online_couse_platform.dto.request.LoginRequest;
+import com.fullstack.online_couse_platform.dto.request.RefreshTokenRequest;
 import com.fullstack.online_couse_platform.dto.request.RegisterInstructorRequest;
 import com.fullstack.online_couse_platform.dto.request.RegisterLearnerRequest;
-import com.fullstack.online_couse_platform.dto.response.LoginResponse;
+import com.fullstack.online_couse_platform.dto.response.TokenResponse;
 import com.fullstack.online_couse_platform.dto.response.UserResponse;
 import com.fullstack.online_couse_platform.exception.AppException;
 import com.fullstack.online_couse_platform.exception.ErrorCode;
@@ -20,8 +20,8 @@ import com.fullstack.online_couse_platform.repository.InstructorRepository;
 import com.fullstack.online_couse_platform.repository.LearnerRepository;
 import com.fullstack.online_couse_platform.repository.RoleRepository;
 import com.fullstack.online_couse_platform.repository.UserRepository;
-import com.fullstack.online_couse_platform.security.JwtService;
 import com.fullstack.online_couse_platform.service.AuthService;
+import com.fullstack.online_couse_platform.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -43,8 +43,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
-    private final JwtProperties jwtProperties;
+    private final TokenService tokenService;
 
     @Override
     @Transactional
@@ -106,26 +105,27 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional(readOnly = true)
-    public LoginResponse login(LoginRequest request) {
+    public TokenResponse login(LoginRequest request) {
         Authentication authentication = new UsernamePasswordAuthenticationToken(request.email(), request.password());
-        authentication = authenticationManager.authenticate(authentication);
+        authenticationManager.authenticate(authentication);
 
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        String accessToken = jwtService.generateAccessToken(
-                user.getId(),
-                user.getEmail(),
-                user.getRole() != null ? user.getRole().getName() : null
-        );
+        return tokenService.createTokenResponse(user);
+    }
 
-        String refreshToken = jwtService.generateRefreshToken(user.getId());
+    @Override
+    @Transactional(readOnly = true)
+    public TokenResponse refreshToken(RefreshTokenRequest request) {
+        var userId = tokenService.getRefreshTokenUserId(request.refreshToken());
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_REFRESH_TOKEN));
 
-        return LoginResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .tokenType("Bearer")
-                .expiresIn(jwtProperties.getExpirySeconds())
-                .build();
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        return tokenService.createTokenResponse(user);
     }
 }

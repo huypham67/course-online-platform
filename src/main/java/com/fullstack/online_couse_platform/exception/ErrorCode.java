@@ -16,6 +16,7 @@ public enum ErrorCode {
     // 401 Unauthorized
     UNAUTHORIZED(401, "Unauthorized", HttpStatus.UNAUTHORIZED),
     INVALID_CREDENTIALS(401, "Invalid email or password", HttpStatus.UNAUTHORIZED),
+    INVALID_REFRESH_TOKEN(401, "Invalid or expired refresh token", HttpStatus.UNAUTHORIZED),
 
     // 403 Forbidden
     FORBIDDEN(403, "Access denied", HttpStatus.FORBIDDEN),

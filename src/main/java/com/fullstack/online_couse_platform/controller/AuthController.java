@@ -1,10 +1,11 @@
 package com.fullstack.online_couse_platform.controller;
 
 import com.fullstack.online_couse_platform.dto.request.LoginRequest;
+import com.fullstack.online_couse_platform.dto.request.RefreshTokenRequest;
 import com.fullstack.online_couse_platform.dto.request.RegisterInstructorRequest;
 import com.fullstack.online_couse_platform.dto.request.RegisterLearnerRequest;
 import com.fullstack.online_couse_platform.dto.response.ApiResult;
-import com.fullstack.online_couse_platform.dto.response.LoginResponse;
+import com.fullstack.online_couse_platform.dto.response.TokenResponse;
 import com.fullstack.online_couse_platform.dto.response.UserResponse;
 import com.fullstack.online_couse_platform.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -64,13 +65,27 @@ public class AuthController {
     @Operation(summary = "Login and receive access token", description = "Authenticates user with email and password, returning JWT access and refresh tokens.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Login successful",
-                    content = @Content(schema = @Schema(implementation = LoginResponse.class))),
+                    content = @Content(schema = @Schema(implementation = TokenResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validation failed or malformed body",
                     content = @Content(schema = @Schema(implementation = ApiResult.class))),
             @ApiResponse(responseCode = "401", description = "Invalid credentials",
                     content = @Content(schema = @Schema(implementation = ApiResult.class)))
     })
-    public ApiResult<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+        public ApiResult<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
         return ApiResult.of(HttpStatus.OK, "Login successful", authService.login(request));
     }
+
+        @PostMapping("/refresh")
+        @Operation(summary = "Refresh access token", description = "Validates a refresh token and rotates the access and refresh token pair.")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "Token refreshed successfully",
+                                        content = @Content(schema = @Schema(implementation = TokenResponse.class))),
+                        @ApiResponse(responseCode = "400", description = "Validation failed or malformed body",
+                                        content = @Content(schema = @Schema(implementation = ApiResult.class))),
+                        @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token",
+                                        content = @Content(schema = @Schema(implementation = ApiResult.class)))
+        })
+        public ApiResult<TokenResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+                return ApiResult.of(HttpStatus.OK, "Token refreshed successfully", authService.refreshToken(request));
+        }
 }
