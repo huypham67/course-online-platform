@@ -8,6 +8,8 @@ import com.fullstack.online_couse_platform.dto.response.ApiResult;
 import com.fullstack.online_couse_platform.dto.response.TokenResponse;
 import com.fullstack.online_couse_platform.dto.response.UserResponse;
 import com.fullstack.online_couse_platform.service.AuthService;
+import com.fullstack.online_couse_platform.service.InstructorService;
+import com.fullstack.online_couse_platform.service.LearnerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -30,6 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+        private final LearnerService learnerService;
+        private final InstructorService instructorService;
 
     @PostMapping("/register/learner")
     @ResponseStatus(HttpStatus.CREATED)
@@ -43,7 +47,7 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = ApiResult.class)))
     })
     public ApiResult<UserResponse> registerLearner(@Valid @RequestBody RegisterLearnerRequest request) {
-        return ApiResult.of(HttpStatus.CREATED, "Learner registered successfully", authService.registerLearner(request));
+                return ApiResult.of(HttpStatus.CREATED, "Learner registered successfully", learnerService.registerLearner(request));
     }
 
     @PostMapping("/register/instructor")
@@ -58,7 +62,7 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = ApiResult.class)))
     })
     public ApiResult<UserResponse> registerInstructor(@Valid @RequestBody RegisterInstructorRequest request) {
-        return ApiResult.of(HttpStatus.CREATED, "Instructor registered successfully", authService.registerInstructor(request));
+                return ApiResult.of(HttpStatus.CREATED, "Instructor registered successfully", instructorService.registerInstructor(request));
     }
 
     @PostMapping("/login")
@@ -88,4 +92,17 @@ public class AuthController {
         public ApiResult<TokenResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
                 return ApiResult.of(HttpStatus.OK, "Token refreshed successfully", authService.refreshToken(request));
         }
+
+            @PostMapping("/logout")
+            @Operation(summary = "Logout", description = "Revokes the current user's active refresh token.")
+            @ApiResponses({
+                    @ApiResponse(responseCode = "200", description = "Logged out successfully",
+                            content = @Content(schema = @Schema(implementation = ApiResult.class))),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized",
+                            content = @Content(schema = @Schema(implementation = ApiResult.class)))
+            })
+            public ApiResult<Void> logout() {
+                authService.logout();
+                return ApiResult.of(HttpStatus.OK, "Logged out successfully", null);
+            }
 }

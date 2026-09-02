@@ -9,5 +9,7 @@ public interface TokenService {
 
     TokenResponse createTokenResponse(User user);
 
-    UUID getRefreshTokenUserId(String refreshToken);
+    User consumeRefreshToken(String refreshToken);
+
+    void revokeActiveTokens(UUID userId);
 }

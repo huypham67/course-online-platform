@@ -5,7 +5,9 @@ import com.fullstack.online_couse_platform.config.JwtProperties;
 import com.fullstack.online_couse_platform.dto.response.TokenResponse;
 import com.fullstack.online_couse_platform.exception.AppException;
 import com.fullstack.online_couse_platform.exception.ErrorCode;
+import com.fullstack.online_couse_platform.model.RefreshToken;
 import com.fullstack.online_couse_platform.model.User;
+import com.fullstack.online_couse_platform.repository.RefreshTokenRepository;
 import com.fullstack.online_couse_platform.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -14,8 +16,13 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -28,27 +35,60 @@ public class TokenServiceImpl implements TokenService {
     private final JwtEncoder jwtEncoder;
     private final JwtDecoder jwtDecoder;
     private final JwtProperties jwtProperties;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
+    @Transactional
     public TokenResponse createTokenResponse(User user) {
+        // Khi tạo token mới, thu hồi tất cả các refresh token hiện tại của người dùng để đảm bảo rằng chỉ có một refresh token hợp lệ tại một thời điểm.
+        refreshTokenRepository.revokeActiveTokensByUserId(user.getId(), Instant.now());
+
+        String refreshToken = generateRefreshToken(user);
         return TokenResponse.builder()
                 .accessToken(generateAccessToken(user))
-                .refreshToken(generateRefreshToken(user.getId()))
+                .refreshToken(refreshToken)
                 .build();
     }
 
     @Override
-    public UUID getRefreshTokenUserId(String refreshToken) {
+    @Transactional
+    public User consumeRefreshToken(String refreshTokenValue) {
         try {
-            var jwt = jwtDecoder.decode(refreshToken);
+            //1. Decode refresh token và xác minh rằng nó là một refresh token hợp lệ.
+            var jwt = jwtDecoder.decode(refreshTokenValue);
             String tokenType = jwt.getClaimAsString(TOKEN_TYPE_CLAIM);
             if (!TokenType.REFRESH.name().equals(tokenType)) {
                 throw new AppException(ErrorCode.INVALID_REFRESH_TOKEN);
             }
-            return UUID.fromString(Objects.requireNonNull(jwt.getSubject()));
+
+            UUID userId = UUID.fromString(Objects.requireNonNull(jwt.getSubject()));
+            UUID tokenId = UUID.fromString(Objects.requireNonNull(jwt.getId()));
+
+            //2. Tìm trong DB xem refresh token có tồn tại, chưa bị thu hồi, chưa hết hạn và khớp với hash của token được cung cấp.
+            RefreshToken refreshToken = refreshTokenRepository.findByJtiAndRevokedAtIsNull(tokenId)
+                    .filter(token -> token.getUser().getId().equals(userId))
+                    .filter(token -> token.getExpiresAt().isAfter(Instant.now()))
+                    .filter(token -> token.getTokenHash().equals(hashToken(refreshTokenValue)))
+                    .orElseThrow(() -> {
+                        // Security option: Nếu phát hiện token đã bị revoke mà vẫn có người dùng cố gắng sử dụng nó,
+                        // nghi ngờ rằng token có thể đã bị đánh cắp, do đó thu hồi tất cả các refresh token hiện tại của người dùng để bảo vệ tài khoản.
+                        refreshTokenRepository.revokeActiveTokensByUserId(userId, Instant.now());
+                        return new AppException(ErrorCode.INVALID_REFRESH_TOKEN);
+                    });
+
+            // 3. Đánh dấu token này đã được sử dụng (revoked) để ngăn chặn việc sử dụng lại.
+            refreshToken.setRevokedAt(Instant.now());
+            refreshTokenRepository.save(refreshToken);
+            return refreshToken.getUser();
         } catch (JwtException | IllegalArgumentException exception) {
             throw new AppException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
+    }
+
+    @Override
+    @Transactional
+    public void revokeActiveTokens(UUID userId) {
+        refreshTokenRepository.revokeActiveTokensByUserId(userId, Instant.now());
     }
 
     private String generateAccessToken(User user) {
@@ -67,15 +107,34 @@ public class TokenServiceImpl implements TokenService {
         return jwtEncoder.encode(JwtEncoderParameters.from(claimsBuilder.build())).getTokenValue();
     }
 
-    private String generateRefreshToken(UUID userId) {
+    private String generateRefreshToken(User user) {
         Instant now = Instant.now();
+        Instant expiresAt = now.plusSeconds(jwtProperties.getRefreshExpirySeconds());
+        UUID tokenId = UUID.randomUUID();
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .subject(userId.toString())
+                .subject(user.getId().toString())
+                .id(tokenId.toString())
                 .issuedAt(now)
-                .expiresAt(now.plusSeconds(jwtProperties.getRefreshExpirySeconds()))
+                .expiresAt(expiresAt)
                 .claim(TOKEN_TYPE_CLAIM, TokenType.REFRESH.name())
                 .build();
 
-        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        String refreshTokenValue = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        refreshTokenRepository.save(RefreshToken.builder()
+            .user(user)
+                .jti(tokenId)
+                .tokenHash(hashToken(refreshTokenValue))
+                .expiresAt(expiresAt)
+                .build());
+        return refreshTokenValue;
+    }
+
+    private String hashToken(String token) {
+        try {
+            byte[] hash = MessageDigest.getInstance("SHA-256").digest(token.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(hash);
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("SHA-256 is unavailable", exception);
+        }
     }
 }

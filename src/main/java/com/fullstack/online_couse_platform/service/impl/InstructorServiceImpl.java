@@ -1,15 +1,20 @@
 package com.fullstack.online_couse_platform.service.impl;
 
 import com.fullstack.online_couse_platform.common.enums.InstructorStatus;
+import com.fullstack.online_couse_platform.common.enums.RoleType;
 import com.fullstack.online_couse_platform.common.utils.SecurityUtils;
+import com.fullstack.online_couse_platform.dto.request.RegisterInstructorRequest;
 import com.fullstack.online_couse_platform.dto.request.UpdateInstructorRequest;
 import com.fullstack.online_couse_platform.dto.response.InstructorResponse;
+import com.fullstack.online_couse_platform.dto.response.UserResponse;
 import com.fullstack.online_couse_platform.exception.AppException;
 import com.fullstack.online_couse_platform.exception.ErrorCode;
 import com.fullstack.online_couse_platform.mapper.InstructorMapper;
 import com.fullstack.online_couse_platform.model.Instructor;
 import com.fullstack.online_couse_platform.repository.InstructorRepository;
+import com.fullstack.online_couse_platform.repository.UserRepository;
 import com.fullstack.online_couse_platform.service.InstructorService;
+import com.fullstack.online_couse_platform.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +26,26 @@ import java.util.UUID;
 public class InstructorServiceImpl implements InstructorService {
 
     private final InstructorRepository instructorRepository;
+    private final UserRepository userRepository;
+    private final UserService userService;
     private final InstructorMapper instructorMapper;
+
+    @Override
+    @Transactional
+    public UserResponse registerInstructor(RegisterInstructorRequest request) {
+        UserResponse userResponse = userService.createUser(request.email(), request.password(), RoleType.INSTRUCTOR);
+        Instructor instructor = Instructor.builder()
+                .user(userRepository.getReferenceById(UUID.fromString(userResponse.id())))
+                .fullName(request.fullName())
+                .avatarUrl(request.avatarUrl())
+                .bio(request.bio())
+                .expertise(request.expertise())
+                .experienceYears(request.experienceYears())
+                .status(InstructorStatus.PENDING)
+                .build();
+        instructorRepository.save(instructor);
+        return userResponse;
+    }
 
     @Override
     @Transactional(readOnly = true)
