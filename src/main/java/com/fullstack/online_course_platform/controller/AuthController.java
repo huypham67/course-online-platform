@@ -32,8 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
-        private final LearnerService learnerService;
-        private final InstructorService instructorService;
+    private final LearnerService learnerService;
+    private final InstructorService instructorService;
 
     @PostMapping("/register/learner")
     @ResponseStatus(HttpStatus.CREATED)
@@ -47,7 +47,7 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = ApiResult.class)))
     })
     public ApiResult<UserResponse> registerLearner(@Valid @RequestBody RegisterLearnerRequest request) {
-                return ApiResult.of(HttpStatus.CREATED, "Learner registered successfully", learnerService.registerLearner(request));
+        return ApiResult.of(HttpStatus.CREATED, "Learner registered successfully", learnerService.registerLearner(request));
     }
 
     @PostMapping("/register/instructor")
@@ -62,7 +62,7 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = ApiResult.class)))
     })
     public ApiResult<UserResponse> registerInstructor(@Valid @RequestBody RegisterInstructorRequest request) {
-                return ApiResult.of(HttpStatus.CREATED, "Instructor registered successfully", instructorService.registerInstructor(request));
+        return ApiResult.of(HttpStatus.CREATED, "Instructor registered successfully", instructorService.registerInstructor(request));
     }
 
     @PostMapping("/login")
@@ -75,34 +75,34 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Invalid credentials",
                     content = @Content(schema = @Schema(implementation = ApiResult.class)))
     })
-        public ApiResult<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ApiResult<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
         return ApiResult.of(HttpStatus.OK, "Login successful", authService.login(request));
     }
 
-        @PostMapping("/refresh")
-        @Operation(summary = "Refresh access token", description = "Validates a refresh token and rotates the access and refresh token pair.")
-        @ApiResponses({
-                        @ApiResponse(responseCode = "200", description = "Token refreshed successfully",
-                                        content = @Content(schema = @Schema(implementation = TokenResponse.class))),
-                        @ApiResponse(responseCode = "400", description = "Validation failed or malformed body",
-                                        content = @Content(schema = @Schema(implementation = ApiResult.class))),
-                        @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token",
-                                        content = @Content(schema = @Schema(implementation = ApiResult.class)))
-        })
-        public ApiResult<TokenResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
-                return ApiResult.of(HttpStatus.OK, "Token refreshed successfully", authService.refreshToken(request));
-        }
-
-            @PostMapping("/logout")
-            @Operation(summary = "Logout", description = "Revokes the current user's active refresh token.")
-            @ApiResponses({
-                    @ApiResponse(responseCode = "200", description = "Logged out successfully",
+    @PostMapping("/refresh")
+    @Operation(summary = "Refresh access token", description = "Validates a refresh token and rotates the access and refresh token pair.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Token refreshed successfully",
+                            content = @Content(schema = @Schema(implementation = TokenResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Validation failed or malformed body",
                             content = @Content(schema = @Schema(implementation = ApiResult.class))),
-                    @ApiResponse(responseCode = "401", description = "Unauthorized",
+            @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token",
                             content = @Content(schema = @Schema(implementation = ApiResult.class)))
-            })
-            public ApiResult<Void> logout() {
-                authService.logout();
-                return ApiResult.of(HttpStatus.OK, "Logged out successfully", null);
-            }
+    })
+    public ApiResult<TokenResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        return ApiResult.of(HttpStatus.OK, "Token refreshed successfully", authService.refreshToken(request));
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "Logout", description = "Revokes the current user's active refresh token.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Logged out successfully",
+                    content = @Content(schema = @Schema(implementation = ApiResult.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = @Content(schema = @Schema(implementation = ApiResult.class)))
+    })
+    public ApiResult<Void> logout() {
+        authService.logout();
+        return ApiResult.of(HttpStatus.OK, "Logged out successfully", null);
+    }
 }
