@@ -29,6 +29,8 @@ public enum ErrorCode {
     // 409 Conflict
     EMAIL_ALREADY_EXISTS(409, "Email is already in use", HttpStatus.CONFLICT),
     USER_ALREADY_EXISTS(409, "User already exists", HttpStatus.CONFLICT),
+    INSTRUCTOR_ALREADY_APPROVED(409, "Instructor is already approved", HttpStatus.CONFLICT),
+    INSTRUCTOR_NOT_PENDING(409, "Instructor is not in pending status", HttpStatus.CONFLICT),
 
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(500, "Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);

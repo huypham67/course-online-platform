@@ -79,4 +79,23 @@ public class InstructorController {
     public ApiResult<InstructorResponse> approveInstructor(@PathVariable UUID instructorId) {
         return ApiResult.of(HttpStatus.OK, "Instructor approved successfully", instructorService.approveInstructor(instructorId));
     }
+
+    @PutMapping("/admin/{instructorId}/reject")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Reject instructor registration", description = "Admin rejects a pending instructor profile")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Instructor rejected successfully",
+                    content = @Content(schema = @Schema(implementation = InstructorResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = @Content(schema = @Schema(implementation = ApiResult.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden",
+                    content = @Content(schema = @Schema(implementation = ApiResult.class))),
+            @ApiResponse(responseCode = "404", description = "Instructor profile not found",
+                    content = @Content(schema = @Schema(implementation = ApiResult.class))),
+            @ApiResponse(responseCode = "409", description = "Instructor is not pending",
+                    content = @Content(schema = @Schema(implementation = ApiResult.class)))
+    })
+    public ApiResult<InstructorResponse> rejectInstructor(@PathVariable UUID instructorId) {
+        return ApiResult.of(HttpStatus.OK, "Instructor rejected successfully", instructorService.rejectInstructor(instructorId));
+    }
 }

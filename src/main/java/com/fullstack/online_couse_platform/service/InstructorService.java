@@ -12,4 +12,6 @@ public interface InstructorService {
     InstructorResponse updateCurrentProfile(UpdateInstructorRequest request);
 
     InstructorResponse approveInstructor(UUID instructorId);
+
+    InstructorResponse rejectInstructor(UUID instructorId);
 }

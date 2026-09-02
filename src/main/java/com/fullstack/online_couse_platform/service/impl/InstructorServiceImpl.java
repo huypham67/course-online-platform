@@ -65,11 +65,26 @@ public class InstructorServiceImpl implements InstructorService {
         Instructor instructor = instructorRepository.findById(instructorId)
                 .orElseThrow(() -> new AppException(ErrorCode.INSTRUCTOR_NOT_FOUND));
 
-        if (instructor.getStatus() == InstructorStatus.APPROVED) {
-            return instructorMapper.toInstructorResponse(instructor);
+        if (instructor.getStatus() != InstructorStatus.PENDING) {
+            throw new AppException(ErrorCode.INSTRUCTOR_NOT_PENDING);
         }
 
         instructor.setStatus(InstructorStatus.APPROVED);
+        Instructor updatedInstructor = instructorRepository.save(instructor);
+        return instructorMapper.toInstructorResponse(updatedInstructor);
+    }
+
+    @Override
+    @Transactional
+    public InstructorResponse rejectInstructor(UUID instructorId) {
+        Instructor instructor = instructorRepository.findById(instructorId)
+                .orElseThrow(() -> new AppException(ErrorCode.INSTRUCTOR_NOT_FOUND));
+
+        if (instructor.getStatus() != InstructorStatus.PENDING) {
+            throw new AppException(ErrorCode.INSTRUCTOR_NOT_PENDING);
+        }
+
+        instructor.setStatus(InstructorStatus.REJECTED);
         Instructor updatedInstructor = instructorRepository.save(instructor);
         return instructorMapper.toInstructorResponse(updatedInstructor);
     }
