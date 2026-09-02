@@ -1,6 +1,6 @@
 spring:
   application:
-    name: online_couse_platform
+    name: online_course_platform
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:bookmark}
     username: ${DB_USERNAME:postgres}

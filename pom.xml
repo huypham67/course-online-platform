@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.fullstack</groupId>
-	<artifactId>online_couse_platform</artifactId>
+	<artifactId>online_course_platform</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name/>
 	<description/>
