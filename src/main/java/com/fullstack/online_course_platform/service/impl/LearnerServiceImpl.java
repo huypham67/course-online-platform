@@ -14,6 +14,7 @@ import com.fullstack.online_course_platform.model.Learner;
 import com.fullstack.online_course_platform.repository.LearnerRepository;
 import com.fullstack.online_course_platform.repository.UserRepository;
 import com.fullstack.online_course_platform.service.LearnerService;
+import com.fullstack.online_course_platform.service.StorageService;
 import com.fullstack.online_course_platform.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,7 @@ public class LearnerServiceImpl implements LearnerService {
     private final UserRepository userRepository;
     private final UserService userService;
     private final LearnerMapper learnerMapper;
+    private final StorageService storageService;
 
     @Override
     @Transactional
@@ -52,7 +54,8 @@ public class LearnerServiceImpl implements LearnerService {
         UUID userId = SecurityUtils.getCurrentUserId();
         Learner learner = learnerRepository.findByUserId(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.LEARNER_NOT_FOUND));
-        return learnerMapper.toLearnerResponse(learner);
+        LearnerResponse response = learnerMapper.toLearnerResponse(learner);
+        return resolvePresignedAvatarUrl(response, learner.getAvatarUrl());
     }
 
     @Override
@@ -71,7 +74,8 @@ public class LearnerServiceImpl implements LearnerService {
 
         Learner updatedLearner = learnerRepository.save(learner);
         log.info("Learner profile updated: userId={}", userId);
-        return learnerMapper.toLearnerResponse(updatedLearner);
+        LearnerResponse response = learnerMapper.toLearnerResponse(updatedLearner);
+        return resolvePresignedAvatarUrl(response, updatedLearner.getAvatarUrl());
     }
 
     @Override
@@ -84,6 +88,25 @@ public class LearnerServiceImpl implements LearnerService {
         learner.setAvatarUrl(request.avatarUrl());
         Learner updatedLearner = learnerRepository.save(learner);
         log.info("Learner avatar updated: userId={}", userId);
-        return learnerMapper.toLearnerResponse(updatedLearner);
+        LearnerResponse response = learnerMapper.toLearnerResponse(updatedLearner);
+        return resolvePresignedAvatarUrl(response, updatedLearner.getAvatarUrl());
+    }
+
+    private LearnerResponse resolvePresignedAvatarUrl(LearnerResponse response, String avatarUrl) {
+        if (avatarUrl == null || avatarUrl.isBlank()) {
+            return response;
+        }
+        String presignedUrl = storageService.generatePresignedGetUrl(avatarUrl);
+        return LearnerResponse.builder()
+                .id(response.id())
+                .email(response.email())
+                .role(response.role())
+                .status(response.status())
+                .fullName(response.fullName())
+                .avatarUrl(presignedUrl)
+                .bio(response.bio())
+                .createdAt(response.createdAt())
+                .updatedAt(response.updatedAt())
+                .build();
     }
 }

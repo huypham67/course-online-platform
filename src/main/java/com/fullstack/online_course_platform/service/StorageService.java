@@ -7,6 +7,8 @@ public interface StorageService {
 
     PresignedUploadResponse generatePresignedUploadUrl(PresignedUploadRequest request);
 
+    String generatePresignedGetUrl(String s3KeyOrUrl);
+
     boolean doesObjectExist(String s3Key);
 
     void deleteObject(String s3Key);

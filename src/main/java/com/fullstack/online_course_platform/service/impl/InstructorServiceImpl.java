@@ -15,6 +15,7 @@ import com.fullstack.online_course_platform.model.Instructor;
 import com.fullstack.online_course_platform.repository.InstructorRepository;
 import com.fullstack.online_course_platform.repository.UserRepository;
 import com.fullstack.online_course_platform.service.InstructorService;
+import com.fullstack.online_course_platform.service.StorageService;
 import com.fullstack.online_course_platform.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,7 @@ public class InstructorServiceImpl implements InstructorService {
     private final UserRepository userRepository;
     private final UserService userService;
     private final InstructorMapper instructorMapper;
+    private final StorageService storageService;
 
     @Override
     @Transactional
@@ -56,7 +58,8 @@ public class InstructorServiceImpl implements InstructorService {
         UUID userId = SecurityUtils.getCurrentUserId();
         Instructor instructor = instructorRepository.findByUserId(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.INSTRUCTOR_NOT_FOUND));
-        return instructorMapper.toInstructorResponse(instructor);
+        InstructorResponse response = instructorMapper.toInstructorResponse(instructor);
+        return resolvePresignedAvatarUrl(response, instructor.getAvatarUrl());
     }
 
     @Override
@@ -81,7 +84,8 @@ public class InstructorServiceImpl implements InstructorService {
 
         Instructor updatedInstructor = instructorRepository.save(instructor);
         log.info("Instructor profile updated: userId={}", userId);
-        return instructorMapper.toInstructorResponse(updatedInstructor);
+        InstructorResponse response = instructorMapper.toInstructorResponse(updatedInstructor);
+        return resolvePresignedAvatarUrl(response, updatedInstructor.getAvatarUrl());
     }
 
     @Override
@@ -94,7 +98,8 @@ public class InstructorServiceImpl implements InstructorService {
         instructor.setAvatarUrl(request.avatarUrl());
         Instructor updatedInstructor = instructorRepository.save(instructor);
         log.info("Instructor avatar updated: userId={}", userId);
-        return instructorMapper.toInstructorResponse(updatedInstructor);
+        InstructorResponse response = instructorMapper.toInstructorResponse(updatedInstructor);
+        return resolvePresignedAvatarUrl(response, updatedInstructor.getAvatarUrl());
     }
 
     @Override
@@ -110,7 +115,8 @@ public class InstructorServiceImpl implements InstructorService {
         instructor.setStatus(InstructorStatus.APPROVED);
         Instructor updatedInstructor = instructorRepository.save(instructor);
         log.info("Instructor approved: instructorId={}", instructorId);
-        return instructorMapper.toInstructorResponse(updatedInstructor);
+        InstructorResponse response = instructorMapper.toInstructorResponse(updatedInstructor);
+        return resolvePresignedAvatarUrl(response, updatedInstructor.getAvatarUrl());
     }
 
     @Override
@@ -126,6 +132,28 @@ public class InstructorServiceImpl implements InstructorService {
         instructor.setStatus(InstructorStatus.REJECTED);
         Instructor updatedInstructor = instructorRepository.save(instructor);
         log.info("Instructor rejected: instructorId={}", instructorId);
-        return instructorMapper.toInstructorResponse(updatedInstructor);
+        InstructorResponse response = instructorMapper.toInstructorResponse(updatedInstructor);
+        return resolvePresignedAvatarUrl(response, updatedInstructor.getAvatarUrl());
+    }
+
+    private InstructorResponse resolvePresignedAvatarUrl(InstructorResponse response, String avatarUrl) {
+        if (avatarUrl == null || avatarUrl.isBlank()) {
+            return response;
+        }
+        String presignedUrl = storageService.generatePresignedGetUrl(avatarUrl);
+        return InstructorResponse.builder()
+                .id(response.id())
+                .email(response.email())
+                .role(response.role())
+                .status(response.status())
+                .fullName(response.fullName())
+                .avatarUrl(presignedUrl)
+                .bio(response.bio())
+                .expertise(response.expertise())
+                .experienceYears(response.experienceYears())
+                .instructorStatus(response.instructorStatus())
+                .createdAt(response.createdAt())
+                .updatedAt(response.updatedAt())
+                .build();
     }
 }

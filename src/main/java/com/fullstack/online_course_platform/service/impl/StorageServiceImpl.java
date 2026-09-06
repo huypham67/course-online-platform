@@ -11,10 +11,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.time.Duration;
@@ -76,6 +78,29 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
+    public String generatePresignedGetUrl(String s3KeyOrUrl) {
+        if (s3KeyOrUrl == null || s3KeyOrUrl.isBlank()) {
+            return null;
+        }
+
+        String s3Key = extractS3Key(s3KeyOrUrl);
+
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(s3Properties.getBucketName())
+                .key(s3Key)
+                .build();
+
+        Duration duration = Duration.ofMinutes(s3Properties.getPresignedGetExpiryMinutes());
+
+        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                .signatureDuration(duration)
+                .getObjectRequest(getObjectRequest)
+                .build();
+
+        return s3Presigner.presignGetObject(presignRequest).url().toString();
+    }
+
+    @Override
     public boolean doesObjectExist(String s3Key) {
         try {
             s3Client.headObject(HeadObjectRequest.builder()
@@ -108,5 +133,17 @@ public class StorageServiceImpl implements StorageService {
             return fileName.substring(fileName.lastIndexOf(".")).toLowerCase();
         }
         return "";
+    }
+
+    private String extractS3Key(String s3KeyOrUrl) {
+        String baseUrl = s3Properties.getPublicBaseUrl();
+        if (baseUrl != null && s3KeyOrUrl.startsWith(baseUrl)) {
+            String key = s3KeyOrUrl.substring(baseUrl.length());
+            return key.startsWith("/") ? key.substring(1) : key;
+        }
+        if (s3KeyOrUrl.contains(".amazonaws.com/")) {
+            return s3KeyOrUrl.substring(s3KeyOrUrl.indexOf(".amazonaws.com/") + 15);
+        }
+        return s3KeyOrUrl;
     }
 }
