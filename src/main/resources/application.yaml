@@ -27,3 +27,13 @@ app:
     private-key: classpath:certs/private.pem
     expiry-seconds: 3600 # 1 hour
     refresh-expiry-seconds: 604800 # 7 days
+
+aws:
+  s3:
+    bucket-name: ${AWS_S3_BUCKET_NAME:online-course-platform-bucket}
+    region: ${AWS_S3_REGION:ap-southeast-1}
+    presigned-expiry-minutes: ${AWS_S3_PRESIGNED_EXPIRY_MINUTES:5}
+    public-base-url: ${AWS_S3_PUBLIC_BASE_URL:https://online-course-platform-bucket.s3.ap-southeast-1.amazonaws.com}
+  credentials:
+    access-key: ${AWS_ACCESS_KEY_ID:}
+    secret-key: ${AWS_SECRET_ACCESS_KEY:}

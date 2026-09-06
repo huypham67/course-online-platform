@@ -3,6 +3,7 @@ package com.fullstack.online_course_platform.service.impl;
 import com.fullstack.online_course_platform.common.enums.RoleType;
 import com.fullstack.online_course_platform.common.utils.SecurityUtils;
 import com.fullstack.online_course_platform.dto.request.RegisterLearnerRequest;
+import com.fullstack.online_course_platform.dto.request.UpdateAvatarRequest;
 import com.fullstack.online_course_platform.dto.request.UpdateLearnerRequest;
 import com.fullstack.online_course_platform.dto.response.LearnerResponse;
 import com.fullstack.online_course_platform.dto.response.UserResponse;
@@ -38,7 +39,6 @@ public class LearnerServiceImpl implements LearnerService {
         Learner learner = Learner.builder()
                 .user(userRepository.getReferenceById(UUID.fromString(userResponse.id())))
                 .fullName(request.fullName())
-                .avatarUrl(request.avatarUrl())
                 .bio(request.bio())
                 .build();
         learnerRepository.save(learner);
@@ -65,15 +65,25 @@ public class LearnerServiceImpl implements LearnerService {
         if (request.fullName() != null) {
             learner.setFullName(request.fullName());
         }
-        if (request.avatarUrl() != null) {
-            learner.setAvatarUrl(request.avatarUrl());
-        }
         if (request.bio() != null) {
             learner.setBio(request.bio());
         }
 
         Learner updatedLearner = learnerRepository.save(learner);
         log.info("Learner profile updated: userId={}", userId);
+        return learnerMapper.toLearnerResponse(updatedLearner);
+    }
+
+    @Override
+    @Transactional
+    public LearnerResponse updateAvatar(UpdateAvatarRequest request) {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        Learner learner = learnerRepository.findByUserId(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.LEARNER_NOT_FOUND));
+
+        learner.setAvatarUrl(request.avatarUrl());
+        Learner updatedLearner = learnerRepository.save(learner);
+        log.info("Learner avatar updated: userId={}", userId);
         return learnerMapper.toLearnerResponse(updatedLearner);
     }
 }

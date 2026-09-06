@@ -19,9 +19,6 @@ public record RegisterInstructorRequest(
     @Size(max = 150, message = "Full name must not exceed 150 characters")
     String fullName,
 
-    @Size(max = 500, message = "Avatar URL must not exceed 500 characters")
-    String avatarUrl,
-
     String bio,
 
     @Size(max = 500, message = "Expertise must not exceed 500 characters")

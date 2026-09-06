@@ -4,6 +4,7 @@ import com.fullstack.online_course_platform.common.enums.InstructorStatus;
 import com.fullstack.online_course_platform.common.enums.RoleType;
 import com.fullstack.online_course_platform.common.utils.SecurityUtils;
 import com.fullstack.online_course_platform.dto.request.RegisterInstructorRequest;
+import com.fullstack.online_course_platform.dto.request.UpdateAvatarRequest;
 import com.fullstack.online_course_platform.dto.request.UpdateInstructorRequest;
 import com.fullstack.online_course_platform.dto.response.InstructorResponse;
 import com.fullstack.online_course_platform.dto.response.UserResponse;
@@ -39,7 +40,6 @@ public class InstructorServiceImpl implements InstructorService {
         Instructor instructor = Instructor.builder()
                 .user(userRepository.getReferenceById(UUID.fromString(userResponse.id())))
                 .fullName(request.fullName())
-                .avatarUrl(request.avatarUrl())
                 .bio(request.bio())
                 .expertise(request.expertise())
                 .experienceYears(request.experienceYears())
@@ -69,9 +69,6 @@ public class InstructorServiceImpl implements InstructorService {
         if (request.fullName() != null) {
             instructor.setFullName(request.fullName());
         }
-        if (request.avatarUrl() != null) {
-            instructor.setAvatarUrl(request.avatarUrl());
-        }
         if (request.bio() != null) {
             instructor.setBio(request.bio());
         }
@@ -84,6 +81,19 @@ public class InstructorServiceImpl implements InstructorService {
 
         Instructor updatedInstructor = instructorRepository.save(instructor);
         log.info("Instructor profile updated: userId={}", userId);
+        return instructorMapper.toInstructorResponse(updatedInstructor);
+    }
+
+    @Override
+    @Transactional
+    public InstructorResponse updateAvatar(UpdateAvatarRequest request) {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        Instructor instructor = instructorRepository.findByUserId(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.INSTRUCTOR_NOT_FOUND));
+
+        instructor.setAvatarUrl(request.avatarUrl());
+        Instructor updatedInstructor = instructorRepository.save(instructor);
+        log.info("Instructor avatar updated: userId={}", userId);
         return instructorMapper.toInstructorResponse(updatedInstructor);
     }
 

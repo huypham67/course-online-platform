@@ -1,5 +1,6 @@
 package com.fullstack.online_course_platform.controller;
 
+import com.fullstack.online_course_platform.dto.request.UpdateAvatarRequest;
 import com.fullstack.online_course_platform.dto.request.UpdateLearnerRequest;
 import com.fullstack.online_course_platform.dto.response.ApiResult;
 import com.fullstack.online_course_platform.dto.response.LearnerResponse;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -58,5 +60,22 @@ public class LearnerController {
     })
     public ApiResult<LearnerResponse> updateCurrentProfile(@Valid @RequestBody UpdateLearnerRequest request) {
         return ApiResult.of(HttpStatus.OK, "Learner profile updated successfully", learnerService.updateCurrentProfile(request));
+    }
+
+    @PatchMapping("/me/avatar")
+    @PreAuthorize("hasRole('LEARNER')")
+    @Operation(summary = "Update current learner avatar", description = "Update the authenticated learner's avatar URL")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Avatar updated successfully",
+                    content = @Content(schema = @Schema(implementation = LearnerResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Validation failed",
+                    content = @Content(schema = @Schema(implementation = ApiResult.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = @Content(schema = @Schema(implementation = ApiResult.class))),
+            @ApiResponse(responseCode = "404", description = "Learner profile not found",
+                    content = @Content(schema = @Schema(implementation = ApiResult.class)))
+    })
+    public ApiResult<LearnerResponse> updateAvatar(@Valid @RequestBody UpdateAvatarRequest request) {
+        return ApiResult.of(HttpStatus.OK, "Avatar updated successfully", learnerService.updateAvatar(request));
     }
 }

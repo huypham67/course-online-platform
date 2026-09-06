@@ -12,6 +12,8 @@ public enum ErrorCode {
     BAD_REQUEST(400, "Bad request", HttpStatus.BAD_REQUEST),
     VALIDATION_FAILED(400, "Validation failed", HttpStatus.BAD_REQUEST),
     INVALID_BODY(400, "Malformed or missing request body", HttpStatus.BAD_REQUEST),
+    INVALID_FILE_TYPE(400, "File type is not supported for this category", HttpStatus.BAD_REQUEST),
+    FILE_SIZE_EXCEEDED(400, "File size exceeds the allowable limit for this category", HttpStatus.BAD_REQUEST),
 
     // 401 Unauthorized
     UNAUTHORIZED(401, "Unauthorized", HttpStatus.UNAUTHORIZED),

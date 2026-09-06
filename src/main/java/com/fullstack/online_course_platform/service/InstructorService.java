@@ -1,7 +1,8 @@
 package com.fullstack.online_course_platform.service;
 
-import com.fullstack.online_course_platform.dto.request.UpdateInstructorRequest;
 import com.fullstack.online_course_platform.dto.request.RegisterInstructorRequest;
+import com.fullstack.online_course_platform.dto.request.UpdateAvatarRequest;
+import com.fullstack.online_course_platform.dto.request.UpdateInstructorRequest;
 import com.fullstack.online_course_platform.dto.response.InstructorResponse;
 import com.fullstack.online_course_platform.dto.response.UserResponse;
 
@@ -14,6 +15,8 @@ public interface InstructorService {
     InstructorResponse getCurrentProfile();
 
     InstructorResponse updateCurrentProfile(UpdateInstructorRequest request);
+
+    InstructorResponse updateAvatar(UpdateAvatarRequest request);
 
     InstructorResponse approveInstructor(UUID instructorId);
 
