@@ -54,7 +54,7 @@ public class CategoryServiceImpl implements CategoryService {
         if (!categoryRepository.existsBySlug(slug)) {
             throw new AppException(ErrorCode.CATEGORY_NOT_FOUND);
         }
-        return courseService.findPublished(null, slug, null, null, null, null, pageable);
+        return courseService.findPublished(null, slug, null, null, null, null, null, pageable);
     }
 
     @Override

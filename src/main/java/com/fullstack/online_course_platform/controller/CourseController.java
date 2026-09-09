@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/courses")
@@ -33,13 +34,14 @@ public class CourseController {
     public ApiResult<PageResponse<CourseSummaryResponse>> getPublishedCourses(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String category,
+            @RequestParam(required = false) UUID instructorId,
             @RequestParam(required = false) CourseLevel level,
             @RequestParam(required = false) String language,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @PageableDefault(size = 20, sort = "publishedAt") Pageable pageable) {
         return ApiResult.of(HttpStatus.OK, "Published courses retrieved successfully",
-                courseService.findPublished(keyword, category, level, language, minPrice, maxPrice, pageable));
+                courseService.findPublished(keyword, category, instructorId, level, language, minPrice, maxPrice, pageable));
     }
 
     @GetMapping("/{slug}")

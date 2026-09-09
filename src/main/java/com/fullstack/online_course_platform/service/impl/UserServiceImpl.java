@@ -5,6 +5,8 @@ import com.fullstack.online_course_platform.common.enums.UserStatus;
 import com.fullstack.online_course_platform.dto.response.UserResponse;
 import com.fullstack.online_course_platform.dto.response.PageResponse;
 import com.fullstack.online_course_platform.dto.response.UserStatusResponse;
+import com.fullstack.online_course_platform.dto.request.UpdateCurrentUserRequest;
+import com.fullstack.online_course_platform.common.utils.SecurityUtils;
 import com.fullstack.online_course_platform.exception.AppException;
 import com.fullstack.online_course_platform.exception.ErrorCode;
 import com.fullstack.online_course_platform.mapper.UserMapper;
@@ -73,6 +75,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserStatusResponse updateStatus(UUID userId, UserStatus status) {
+        if (userId.equals(SecurityUtils.getCurrentUserId()) && status == UserStatus.INACTIVE) {
+            throw new AppException(ErrorCode.FORBIDDEN, "Administrators cannot deactivate their own account");
+        }
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         user.setStatus(status);
@@ -84,5 +89,20 @@ public class UserServiceImpl implements UserService {
                 .id(saved.getId().toString())
                 .status(saved.getStatus())
                 .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponse getCurrentUser() {
+        return getUser(SecurityUtils.getCurrentUserId());
+    }
+
+    @Override
+    @Transactional
+    public void updateCurrentUser(UpdateCurrentUserRequest request) {
+        User user = userRepository.findById(SecurityUtils.getCurrentUserId())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        userMapper.updateUser(request, user);
+        userRepository.save(user);
     }
 }

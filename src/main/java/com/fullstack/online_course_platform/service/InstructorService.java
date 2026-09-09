@@ -8,6 +8,7 @@ import com.fullstack.online_course_platform.dto.response.InstructorResponse;
 import com.fullstack.online_course_platform.dto.response.InstructorStatusResponse;
 import com.fullstack.online_course_platform.dto.response.UserResponse;
 import com.fullstack.online_course_platform.dto.response.PageResponse;
+import com.fullstack.online_course_platform.dto.response.PublicInstructorResponse;
 import com.fullstack.online_course_platform.common.enums.InstructorStatus;
 import org.springframework.data.domain.Pageable;
 
@@ -30,4 +31,10 @@ public interface InstructorService {
     PageResponse<InstructorResponse> findInstructors(String keyword, InstructorStatus status, Pageable pageable);
 
     InstructorResponse getInstructor(UUID instructorId);
+
+    PublicInstructorResponse getPublicInstructor(UUID instructorId);
+
+    InstructorStatusResponse suspendInstructor(UUID instructorId);
+
+    InstructorStatusResponse reactivateInstructor(UUID instructorId);
 }

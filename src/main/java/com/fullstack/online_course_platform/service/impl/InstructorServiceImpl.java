@@ -10,6 +10,7 @@ import com.fullstack.online_course_platform.dto.response.AvatarResponse;
 import com.fullstack.online_course_platform.dto.response.InstructorResponse;
 import com.fullstack.online_course_platform.dto.response.InstructorStatusResponse;
 import com.fullstack.online_course_platform.dto.response.PageResponse;
+import com.fullstack.online_course_platform.dto.response.PublicInstructorResponse;
 import com.fullstack.online_course_platform.dto.response.UserResponse;
 import com.fullstack.online_course_platform.exception.AppException;
 import com.fullstack.online_course_platform.exception.ErrorCode;
@@ -20,6 +21,8 @@ import com.fullstack.online_course_platform.repository.UserRepository;
 import com.fullstack.online_course_platform.service.InstructorService;
 import com.fullstack.online_course_platform.service.StorageService;
 import com.fullstack.online_course_platform.service.UserService;
+import com.fullstack.online_course_platform.service.TokenService;
+import com.fullstack.online_course_platform.common.enums.UserStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,6 +41,7 @@ public class InstructorServiceImpl implements InstructorService {
     private final UserService userService;
     private final InstructorMapper instructorMapper;
     private final StorageService storageService;
+    private final TokenService tokenService;
 
     @Override
     @Transactional
@@ -175,6 +179,63 @@ public class InstructorServiceImpl implements InstructorService {
                 .orElseThrow(() -> new AppException(ErrorCode.INSTRUCTOR_NOT_FOUND));
             return resolvePresignedAvatarUrl(instructorMapper.toInstructorResponse(instructor), instructor.getAvatarUrl());
             }
+
+        @Override
+        @Transactional(readOnly = true)
+        public PublicInstructorResponse getPublicInstructor(UUID instructorId) {
+            Instructor instructor = instructorRepository.findByIdAndStatus(instructorId, InstructorStatus.APPROVED)
+                    .orElseThrow(() -> new AppException(ErrorCode.INSTRUCTOR_NOT_FOUND));
+            PublicInstructorResponse response = instructorMapper.toPublicResponse(instructor);
+            if (response.avatarUrl() == null || response.avatarUrl().isBlank()) {
+                return response;
+            }
+            return PublicInstructorResponse.builder()
+                    .id(response.id())
+                    .fullName(response.fullName())
+                    .avatarUrl(storageService.generatePresignedGetUrl(response.avatarUrl()))
+                    .headline(response.headline())
+                    .bio(response.bio())
+                    .expertise(response.expertise())
+                    .experienceYears(response.experienceYears())
+                    .websiteUrl(response.websiteUrl())
+                    .linkedinUrl(response.linkedinUrl())
+                    .build();
+        }
+
+        @Override
+        @Transactional
+        public InstructorStatusResponse suspendInstructor(UUID instructorId) {
+            Instructor instructor = instructorRepository.findById(instructorId)
+                    .orElseThrow(() -> new AppException(ErrorCode.INSTRUCTOR_NOT_FOUND));
+            if (instructor.getStatus() != InstructorStatus.APPROVED) {
+                throw new AppException(ErrorCode.INSTRUCTOR_STATUS_CONFLICT, "Only approved instructors can be suspended");
+            }
+            instructor.setStatus(InstructorStatus.SUSPENDED);
+            instructor.getUser().setStatus(UserStatus.INACTIVE);
+            Instructor saved = instructorRepository.save(instructor);
+            tokenService.revokeActiveTokens(saved.getUser().getId());
+            return toStatusResponse(saved);
+        }
+
+        @Override
+        @Transactional
+        public InstructorStatusResponse reactivateInstructor(UUID instructorId) {
+            Instructor instructor = instructorRepository.findById(instructorId)
+                    .orElseThrow(() -> new AppException(ErrorCode.INSTRUCTOR_NOT_FOUND));
+            if (instructor.getStatus() != InstructorStatus.SUSPENDED) {
+                throw new AppException(ErrorCode.INSTRUCTOR_STATUS_CONFLICT, "Only suspended instructors can be reactivated");
+            }
+            instructor.setStatus(InstructorStatus.APPROVED);
+            instructor.getUser().setStatus(UserStatus.ACTIVE);
+            return toStatusResponse(instructorRepository.save(instructor));
+        }
+
+        private InstructorStatusResponse toStatusResponse(Instructor instructor) {
+            return InstructorStatusResponse.builder()
+                    .id(instructor.getId().toString())
+                    .instructorStatus(instructor.getStatus())
+                    .build();
+        }
 
     private InstructorResponse resolvePresignedAvatarUrl(InstructorResponse response, String avatarUrl) {
         if (avatarUrl == null || avatarUrl.isBlank()) {

@@ -13,6 +13,7 @@ import java.util.UUID;
 
 public interface InstructorRepository extends JpaRepository<Instructor, UUID> {
     Optional<Instructor> findByUserId(UUID userId);
+        Optional<Instructor> findByIdAndStatus(UUID id, InstructorStatus status);
 
     @Query("select instructor from Instructor instructor join fetch instructor.user user " +
             "where (:keyword is null or lower(user.email) like lower(concat('%', :keyword, '%')) " +

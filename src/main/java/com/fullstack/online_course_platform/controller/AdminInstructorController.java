@@ -58,4 +58,16 @@ public class AdminInstructorController {
         return ApiResult.of(HttpStatus.OK, "Instructor rejected successfully",
                 instructorService.rejectInstructor(instructorId));
     }
+
+    @PostMapping("/{instructorId}/suspend")
+    public ApiResult<InstructorStatusResponse> suspend(@PathVariable UUID instructorId) {
+        return ApiResult.of(HttpStatus.OK, "Instructor suspended successfully",
+                instructorService.suspendInstructor(instructorId));
+    }
+
+    @PostMapping("/{instructorId}/reactivate")
+    public ApiResult<InstructorStatusResponse> reactivate(@PathVariable UUID instructorId) {
+        return ApiResult.of(HttpStatus.OK, "Instructor reactivated successfully",
+                instructorService.reactivateInstructor(instructorId));
+    }
 }

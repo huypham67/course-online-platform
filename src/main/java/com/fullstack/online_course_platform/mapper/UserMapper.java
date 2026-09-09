@@ -2,10 +2,14 @@ package com.fullstack.online_course_platform.mapper;
 
 import com.fullstack.online_course_platform.common.enums.RoleType;
 import com.fullstack.online_course_platform.dto.response.UserResponse;
+import com.fullstack.online_course_platform.dto.request.UpdateCurrentUserRequest;
 import com.fullstack.online_course_platform.model.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -18,6 +22,10 @@ public interface UserMapper {
     @Mapping(target = "createdAt", source = "createdAt", qualifiedByName = "instantToString")
     @Mapping(target = "updatedAt", source = "updatedAt", qualifiedByName = "instantToString")
     UserResponse toUserResponse(User user);
+
+    @BeanMapping(ignoreByDefault = true, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "fullName", source = "fullName")
+    void updateUser(UpdateCurrentUserRequest request, @MappingTarget User user);
 
     @Named("uuidToString")
     default String uuidToString(UUID uuid) {

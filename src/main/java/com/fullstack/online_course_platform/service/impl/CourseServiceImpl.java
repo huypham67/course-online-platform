@@ -57,10 +57,11 @@ public class CourseServiceImpl implements CourseService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<CourseSummaryResponse> findPublished(
-            String keyword, String category, CourseLevel level, String language,
+            String keyword, String category, UUID instructorId, CourseLevel level, String language,
             BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
         var specification = CourseSpecifications.filter(
                 CourseStatus.PUBLISHED, null, keyword, category, level, language, minPrice, maxPrice);
+        specification = specification.and(CourseSpecifications.byInstructorId(instructorId));
         return PageResponse.from(courseRepository.findAll(specification, pageable).map(courseResponseMapper::toSummary));
     }
 

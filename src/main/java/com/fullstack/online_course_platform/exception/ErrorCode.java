@@ -39,6 +39,7 @@ public enum ErrorCode {
     USER_ALREADY_EXISTS(409, "User already exists", HttpStatus.CONFLICT),
     INSTRUCTOR_ALREADY_APPROVED(409, "Instructor is already approved", HttpStatus.CONFLICT),
     INSTRUCTOR_NOT_PENDING(409, "Instructor is not in pending status", HttpStatus.CONFLICT),
+    INSTRUCTOR_STATUS_CONFLICT(409, "Instructor status does not allow this operation", HttpStatus.CONFLICT),
     COURSE_STATUS_CONFLICT(409, "Course status does not allow this operation", HttpStatus.CONFLICT),
     CATEGORY_SLUG_ALREADY_EXISTS(409, "Category slug is already in use", HttpStatus.CONFLICT),
     CATEGORY_IN_USE(409, "Category is assigned to one or more courses", HttpStatus.CONFLICT),

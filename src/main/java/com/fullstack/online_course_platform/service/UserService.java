@@ -5,6 +5,7 @@ import com.fullstack.online_course_platform.common.enums.UserStatus;
 import com.fullstack.online_course_platform.dto.response.PageResponse;
 import com.fullstack.online_course_platform.dto.response.UserResponse;
 import com.fullstack.online_course_platform.dto.response.UserStatusResponse;
+import com.fullstack.online_course_platform.dto.request.UpdateCurrentUserRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.UUID;
@@ -18,4 +19,8 @@ public interface UserService {
     UserResponse getUser(UUID userId);
 
     UserStatusResponse updateStatus(UUID userId, UserStatus status);
+
+    UserResponse getCurrentUser();
+
+    void updateCurrentUser(UpdateCurrentUserRequest request);
 }

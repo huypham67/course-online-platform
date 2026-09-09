@@ -1,6 +1,7 @@
 package com.fullstack.online_course_platform.mapper;
 
 import com.fullstack.online_course_platform.dto.response.InstructorResponse;
+import com.fullstack.online_course_platform.dto.response.PublicInstructorResponse;
 import com.fullstack.online_course_platform.model.Instructor;
 import com.fullstack.online_course_platform.common.enums.RoleType;
 import com.fullstack.online_course_platform.model.User;
@@ -26,6 +27,10 @@ public interface InstructorMapper {
     @Mapping(target = "createdAt", source = "instructor.user.createdAt", qualifiedByName = "instantToString")
     @Mapping(target = "updatedAt", source = "instructor.user.updatedAt", qualifiedByName = "instantToString")
     InstructorResponse toInstructorResponse(Instructor instructor);
+
+    @Mapping(target = "id", source = "instructor.id", qualifiedByName = "uuidToString")
+    @Mapping(target = "fullName", source = "instructor.user.fullName")
+    PublicInstructorResponse toPublicResponse(Instructor instructor);
 
     @Named("uuidToString")
     default String uuidToString(java.util.UUID uuid) {

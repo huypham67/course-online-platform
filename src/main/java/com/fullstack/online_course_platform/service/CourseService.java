@@ -20,7 +20,7 @@ import java.util.UUID;
 
 public interface CourseService {
 
-    PageResponse<CourseSummaryResponse> findPublished(String keyword, String category, CourseLevel level,
+    PageResponse<CourseSummaryResponse> findPublished(String keyword, String category, UUID instructorId, CourseLevel level,
                                                        String language, BigDecimal minPrice, BigDecimal maxPrice,
                                                        Pageable pageable);
     CourseDetailResponse getPublishedBySlug(String slug);
