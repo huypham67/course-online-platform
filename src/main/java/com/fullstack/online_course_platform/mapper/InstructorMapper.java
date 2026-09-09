@@ -17,7 +17,7 @@ public interface InstructorMapper {
     @Mapping(target = "email", source = "instructor.user.email")
     @Mapping(target = "role", expression = "java(mapRoleType(instructor.getUser()))")
     @Mapping(target = "status", source = "instructor.user.status")
-    @Mapping(target = "fullName", source = "instructor.fullName")
+    @Mapping(target = "fullName", source = "instructor.user.fullName")
     @Mapping(target = "avatarUrl", source = "instructor.avatarUrl")
     @Mapping(target = "bio", source = "instructor.bio")
     @Mapping(target = "expertise", source = "instructor.expertise")

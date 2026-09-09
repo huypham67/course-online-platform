@@ -27,7 +27,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponse createUser(String email, String password, RoleType roleType) {
+    public UserResponse createUser(String email, String password, String fullName, RoleType roleType) {
         if (userRepository.existsByEmail(email)) {
             throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
@@ -40,6 +40,7 @@ public class UserServiceImpl implements UserService {
 
         User user = User.builder()
                 .email(email)
+            .fullName(fullName)
                 .passwordHash(passwordEncoder.encode(password))
                 .role(role)
                 .status(UserStatus.ACTIVE)

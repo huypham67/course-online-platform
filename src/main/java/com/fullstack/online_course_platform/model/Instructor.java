@@ -28,20 +28,29 @@ public class Instructor extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
-    @Column(name = "full_name", length = 150)
-    private String fullName;
-
     @Column(name = "avatar_url", length = 500)
     private String avatarUrl;
 
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
 
+    @Column(name = "phone", length = 20)
+    private String phone;
+
+    @Column(name = "headline", length = 200)
+    private String headline;
+
     @Column(name = "expertise", length = 500)
     private String expertise;
 
     @Column(name = "experience_years")
     private Integer experienceYears;
+
+    @Column(name = "website_url", length = 500)
+    private String websiteUrl;
+
+    @Column(name = "linkedin_url", length = 500)
+    private String linkedinUrl;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default

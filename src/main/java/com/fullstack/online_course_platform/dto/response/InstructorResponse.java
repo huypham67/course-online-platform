@@ -21,10 +21,20 @@ public record InstructorResponse(
 
     String bio,
 
+    String phone,
+
+    String headline,
+
     String expertise,
 
     @JsonProperty("experience_years")
     Integer experienceYears,
+
+    @JsonProperty("website_url")
+    String websiteUrl,
+
+    @JsonProperty("linkedin_url")
+    String linkedinUrl,
 
     @JsonProperty("instructor_status")
     InstructorStatus instructorStatus,

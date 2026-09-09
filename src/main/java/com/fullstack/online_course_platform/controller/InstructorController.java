@@ -3,7 +3,9 @@ package com.fullstack.online_course_platform.controller;
 import com.fullstack.online_course_platform.dto.request.UpdateAvatarRequest;
 import com.fullstack.online_course_platform.dto.request.UpdateInstructorRequest;
 import com.fullstack.online_course_platform.dto.response.ApiResult;
+import com.fullstack.online_course_platform.dto.response.AvatarResponse;
 import com.fullstack.online_course_platform.dto.response.InstructorResponse;
+import com.fullstack.online_course_platform.dto.response.InstructorStatusResponse;
 import com.fullstack.online_course_platform.service.InstructorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -50,19 +53,19 @@ public class InstructorController {
         return ApiResult.of(HttpStatus.OK, "Instructor profile retrieved successfully", instructorService.getCurrentProfile());
     }
 
-    @PutMapping("/me")
+        @PatchMapping("/me")
     @PreAuthorize("hasRole('INSTRUCTOR')")
     @Operation(summary = "Update current instructor profile", description = "Update the authenticated instructor profile")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Profile updated successfully",
-                    content = @Content(schema = @Schema(implementation = InstructorResponse.class))),
+            @ApiResponse(responseCode = "204", description = "Profile updated successfully"),
             @ApiResponse(responseCode = "400", description = "Validation failed",
                     content = @Content(schema = @Schema(implementation = ApiResult.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized",
                     content = @Content(schema = @Schema(implementation = ApiResult.class)))
     })
-    public ApiResult<InstructorResponse> updateCurrentInstructorProfile(@Valid @RequestBody UpdateInstructorRequest request) {
-        return ApiResult.of(HttpStatus.OK, "Instructor profile updated successfully", instructorService.updateCurrentProfile(request));
+        @ResponseStatus(HttpStatus.NO_CONTENT)
+        public void updateCurrentInstructorProfile(@Valid @RequestBody UpdateInstructorRequest request) {
+                instructorService.updateCurrentProfile(request);
     }
 
     @PatchMapping("/me/avatar")
@@ -70,7 +73,7 @@ public class InstructorController {
     @Operation(summary = "Update current instructor avatar", description = "Update the authenticated instructor's avatar URL")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Avatar updated successfully",
-                    content = @Content(schema = @Schema(implementation = InstructorResponse.class))),
+                    content = @Content(schema = @Schema(implementation = AvatarResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validation failed",
                     content = @Content(schema = @Schema(implementation = ApiResult.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized",
@@ -78,7 +81,7 @@ public class InstructorController {
             @ApiResponse(responseCode = "404", description = "Instructor profile not found",
                     content = @Content(schema = @Schema(implementation = ApiResult.class)))
     })
-    public ApiResult<InstructorResponse> updateAvatar(@Valid @RequestBody UpdateAvatarRequest request) {
+        public ApiResult<AvatarResponse> updateAvatar(@Valid @RequestBody UpdateAvatarRequest request) {
         return ApiResult.of(HttpStatus.OK, "Avatar updated successfully", instructorService.updateAvatar(request));
     }
 
@@ -87,7 +90,7 @@ public class InstructorController {
     @Operation(summary = "Approve instructor registration", description = "Admin approves a pending instructor profile")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Instructor approved successfully",
-                    content = @Content(schema = @Schema(implementation = InstructorResponse.class))),
+                    content = @Content(schema = @Schema(implementation = InstructorStatusResponse.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized",
                     content = @Content(schema = @Schema(implementation = ApiResult.class))),
             @ApiResponse(responseCode = "403", description = "Forbidden",
@@ -95,7 +98,7 @@ public class InstructorController {
             @ApiResponse(responseCode = "404", description = "Instructor profile not found",
                     content = @Content(schema = @Schema(implementation = ApiResult.class)))
     })
-    public ApiResult<InstructorResponse> approveInstructor(@PathVariable UUID instructorId) {
+        public ApiResult<InstructorStatusResponse> approveInstructor(@PathVariable UUID instructorId) {
         return ApiResult.of(HttpStatus.OK, "Instructor approved successfully", instructorService.approveInstructor(instructorId));
     }
 
@@ -104,7 +107,7 @@ public class InstructorController {
     @Operation(summary = "Reject instructor registration", description = "Admin rejects a pending instructor profile")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Instructor rejected successfully",
-                    content = @Content(schema = @Schema(implementation = InstructorResponse.class))),
+                    content = @Content(schema = @Schema(implementation = InstructorStatusResponse.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized",
                     content = @Content(schema = @Schema(implementation = ApiResult.class))),
             @ApiResponse(responseCode = "403", description = "Forbidden",
@@ -114,7 +117,7 @@ public class InstructorController {
             @ApiResponse(responseCode = "409", description = "Instructor is not pending",
                     content = @Content(schema = @Schema(implementation = ApiResult.class)))
     })
-    public ApiResult<InstructorResponse> rejectInstructor(@PathVariable UUID instructorId) {
+        public ApiResult<InstructorStatusResponse> rejectInstructor(@PathVariable UUID instructorId) {
         return ApiResult.of(HttpStatus.OK, "Instructor rejected successfully", instructorService.rejectInstructor(instructorId));
     }
 }

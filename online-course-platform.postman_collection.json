@@ -26,7 +26,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{learnerEmail}}\",\n  \"password\": \"{{learnerPassword}}\",\n  \"fullName\": \"Test Learner\",\n  \"avatarUrl\": \"https://example.com/learner.png\",\n  \"bio\": \"Learner test account\"\n}"
+              "raw": "{\n  \"email\": \"{{learnerEmail}}\",\n  \"password\": \"{{learnerPassword}}\",\n  \"fullName\": \"Nguyen Van A\",\n  \"bio\": \"Backend developer who loves learning new technologies.\",\n  \"phone\": \"0905123456\",\n  \"dateOfBirth\": \"2003-05-20\",\n  \"occupation\": \"Software Engineer\",\n  \"learningGoal\": \"Become proficient in Spring Boot and Microservices\"\n}"
             },
             "url": "{{baseUrl}}/api/v1/auth/register/learner"
           },
@@ -49,7 +49,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{instructorEmail}}\",\n  \"password\": \"{{instructorPassword}}\",\n  \"fullName\": \"Test Instructor\",\n  \"avatarUrl\": \"https://example.com/instructor.png\",\n  \"bio\": \"Instructor test account\",\n  \"expertise\": \"Backend development\",\n  \"experienceYears\": 5\n}"
+              "raw": "{\n  \"email\": \"{{instructorEmail}}\",\n  \"password\": \"{{instructorPassword}}\",\n  \"fullName\": \"John Smith\",\n  \"bio\": \"I've been building backend systems for over 8 years.\",\n  \"phone\": \"+12025550123\",\n  \"headline\": \"Senior Java Backend Engineer & Technical Instructor\",\n  \"expertise\": \"Java, Spring Boot, Microservices, PostgreSQL\",\n  \"experienceYears\": 8,\n  \"websiteUrl\": \"https://johnsmith.dev\",\n  \"linkedinUrl\": \"https://www.linkedin.com/in/johnsmith\"\n}"
             },
             "url": "{{baseUrl}}/api/v1/auth/register/instructor"
           },
@@ -159,14 +159,14 @@
         {
           "name": "Update my learner profile",
           "request": {
-            "method": "PUT",
+            "method": "PATCH",
             "header": [
               { "key": "Authorization", "value": "Bearer {{accessToken}}" },
               { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"fullName\": \"Updated Test Learner\",\n  \"avatarUrl\": \"https://example.com/learner-updated.png\",\n  \"bio\": \"Updated learner bio\"\n}"
+              "raw": "{\n  \"fullName\": \"Nguyen Van A\",\n  \"bio\": \"Backend developer focused on continuous learning.\",\n  \"phone\": \"0905123456\",\n  \"dateOfBirth\": \"2003-05-20\",\n  \"occupation\": \"Software Engineer\",\n  \"learningGoal\": \"Master Spring Boot and distributed systems\"\n}"
             },
             "url": "{{baseUrl}}/api/v1/learner/me"
           },
@@ -175,7 +175,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Returns 200 OK', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Returns 204 No Content', function () { pm.response.to.have.status(204); });"
                 ]
               }
             }
@@ -208,14 +208,14 @@
         {
           "name": "Update my instructor profile",
           "request": {
-            "method": "PUT",
+            "method": "PATCH",
             "header": [
               { "key": "Authorization", "value": "Bearer {{accessToken}}" },
               { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"fullName\": \"Updated Test Instructor\",\n  \"avatarUrl\": \"https://example.com/instructor-updated.png\",\n  \"bio\": \"Updated instructor bio\",\n  \"expertise\": \"Spring Boot and Java\",\n  \"experienceYears\": 6\n}"
+              "raw": "{\n  \"fullName\": \"John Smith\",\n  \"bio\": \"I build scalable backend systems and teach practical engineering.\",\n  \"phone\": \"+12025550123\",\n  \"headline\": \"Senior Java Backend Engineer & Technical Instructor\",\n  \"expertise\": \"Java, Spring Boot, Microservices, PostgreSQL\",\n  \"experienceYears\": 8,\n  \"websiteUrl\": \"https://johnsmith.dev\",\n  \"linkedinUrl\": \"https://www.linkedin.com/in/johnsmith\"\n}"
             },
             "url": "{{baseUrl}}/api/v1/instructor/me"
           },
@@ -224,7 +224,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Returns 200 OK', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Returns 204 No Content', function () { pm.response.to.have.status(204); });"
                 ]
               }
             }
@@ -242,7 +242,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Returns 200 OK', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Returns 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Returns compact instructor status', function () { const data = pm.response.json().data; pm.expect(data.id).to.eql(pm.collectionVariables.get('instructorId')); pm.expect(data.instructor_status).to.eql('APPROVED'); });"
                 ]
               }
             }
@@ -260,7 +261,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Returns 200 OK', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Returns 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Returns compact instructor status', function () { const data = pm.response.json().data; pm.expect(data.id).to.eql(pm.collectionVariables.get('instructorId')); pm.expect(data.instructor_status).to.eql('REJECTED'); });"
                 ]
               }
             }

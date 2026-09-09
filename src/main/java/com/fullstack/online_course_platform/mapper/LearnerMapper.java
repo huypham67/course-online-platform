@@ -17,7 +17,7 @@ public interface LearnerMapper {
     @Mapping(target = "email", source = "learner.user.email")
     @Mapping(target = "role", expression = "java(mapRoleType(learner.getUser()))")
     @Mapping(target = "status", source = "learner.user.status")
-    @Mapping(target = "fullName", source = "learner.fullName")
+    @Mapping(target = "fullName", source = "learner.user.fullName")
     @Mapping(target = "avatarUrl", source = "learner.avatarUrl")
     @Mapping(target = "bio", source = "learner.bio")
     @Mapping(target = "createdAt", source = "learner.user.createdAt", qualifiedByName = "instantToString")

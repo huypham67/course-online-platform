@@ -29,6 +29,9 @@ public class DataSeeder implements CommandLineRunner {
     @Value("${app.admin.password}")
     private String adminPassword;
 
+    @Value("${app.admin.full-name}")
+    private String adminFullName;
+
     @Override
     @Transactional
     public void run(String... args) {
@@ -61,6 +64,7 @@ public class DataSeeder implements CommandLineRunner {
 
             User adminUser = User.builder()
                     .email(adminEmail)
+                    .fullName(adminFullName)
                     .passwordHash(passwordEncoder.encode(adminPassword))
                     .role(adminRole)
                     .status(UserStatus.ACTIVE)

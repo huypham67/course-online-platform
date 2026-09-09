@@ -5,5 +5,5 @@ import com.fullstack.online_course_platform.dto.response.UserResponse;
 
 public interface UserService {
 
-    UserResponse createUser(String email, String password, RoleType roleType);
+    UserResponse createUser(String email, String password, String fullName, RoleType roleType);
 }

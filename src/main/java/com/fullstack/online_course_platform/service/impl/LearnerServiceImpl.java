@@ -5,6 +5,7 @@ import com.fullstack.online_course_platform.common.utils.SecurityUtils;
 import com.fullstack.online_course_platform.dto.request.RegisterLearnerRequest;
 import com.fullstack.online_course_platform.dto.request.UpdateAvatarRequest;
 import com.fullstack.online_course_platform.dto.request.UpdateLearnerRequest;
+import com.fullstack.online_course_platform.dto.response.AvatarResponse;
 import com.fullstack.online_course_platform.dto.response.LearnerResponse;
 import com.fullstack.online_course_platform.dto.response.UserResponse;
 import com.fullstack.online_course_platform.exception.AppException;
@@ -37,11 +38,15 @@ public class LearnerServiceImpl implements LearnerService {
     @Override
     @Transactional
     public UserResponse registerLearner(RegisterLearnerRequest request) {
-        UserResponse userResponse = userService.createUser(request.email(), request.password(), RoleType.LEARNER);
+        UserResponse userResponse = userService.createUser(
+            request.email(), request.password(), request.fullName(), RoleType.LEARNER);
         Learner learner = Learner.builder()
                 .user(userRepository.getReferenceById(UUID.fromString(userResponse.id())))
-                .fullName(request.fullName())
                 .bio(request.bio())
+                .phone(request.phone())
+                .dateOfBirth(request.dateOfBirth())
+                .occupation(request.occupation())
+                .learningGoal(request.learningGoal())
                 .build();
         learnerRepository.save(learner);
         log.info("Learner registered: userId={}, email={}", userResponse.id(), request.email());
@@ -60,36 +65,47 @@ public class LearnerServiceImpl implements LearnerService {
 
     @Override
     @Transactional
-    public LearnerResponse updateCurrentProfile(UpdateLearnerRequest request) {
+    public void updateCurrentProfile(UpdateLearnerRequest request) {
         UUID userId = SecurityUtils.getCurrentUserId();
         Learner learner = learnerRepository.findByUserId(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.LEARNER_NOT_FOUND));
 
         if (request.fullName() != null) {
-            learner.setFullName(request.fullName());
+            learner.getUser().setFullName(request.fullName());
         }
         if (request.bio() != null) {
             learner.setBio(request.bio());
         }
+        if (request.phone() != null) {
+            learner.setPhone(request.phone());
+        }
+        if (request.dateOfBirth() != null) {
+            learner.setDateOfBirth(request.dateOfBirth());
+        }
+        if (request.occupation() != null) {
+            learner.setOccupation(request.occupation());
+        }
+        if (request.learningGoal() != null) {
+            learner.setLearningGoal(request.learningGoal());
+        }
 
-        Learner updatedLearner = learnerRepository.save(learner);
+        learnerRepository.save(learner);
         log.info("Learner profile updated: userId={}", userId);
-        LearnerResponse response = learnerMapper.toLearnerResponse(updatedLearner);
-        return resolvePresignedAvatarUrl(response, updatedLearner.getAvatarUrl());
     }
 
     @Override
     @Transactional
-    public LearnerResponse updateAvatar(UpdateAvatarRequest request) {
+    public AvatarResponse updateAvatar(UpdateAvatarRequest request) {
         UUID userId = SecurityUtils.getCurrentUserId();
         Learner learner = learnerRepository.findByUserId(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.LEARNER_NOT_FOUND));
 
         learner.setAvatarUrl(request.avatarUrl());
-        Learner updatedLearner = learnerRepository.save(learner);
+        learnerRepository.save(learner);
         log.info("Learner avatar updated: userId={}", userId);
-        LearnerResponse response = learnerMapper.toLearnerResponse(updatedLearner);
-        return resolvePresignedAvatarUrl(response, updatedLearner.getAvatarUrl());
+        return AvatarResponse.builder()
+                .avatarUrl(storageService.generatePresignedGetUrl(learner.getAvatarUrl()))
+                .build();
     }
 
     private LearnerResponse resolvePresignedAvatarUrl(LearnerResponse response, String avatarUrl) {
@@ -105,6 +121,10 @@ public class LearnerServiceImpl implements LearnerService {
                 .fullName(response.fullName())
                 .avatarUrl(presignedUrl)
                 .bio(response.bio())
+                .phone(response.phone())
+                .dateOfBirth(response.dateOfBirth())
+                .occupation(response.occupation())
+                .learningGoal(response.learningGoal())
                 .createdAt(response.createdAt())
                 .updatedAt(response.updatedAt())
                 .build();

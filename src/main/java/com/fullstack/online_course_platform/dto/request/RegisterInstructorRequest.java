@@ -16,15 +16,28 @@ public record RegisterInstructorRequest(
     @Size(min = 6, max = 100, message = "Password must be at least 6 characters")
     String password,
 
+    @NotBlank(message = "Full name is required")
     @Size(max = 150, message = "Full name must not exceed 150 characters")
     String fullName,
 
     String bio,
 
+    @Size(max = 20, message = "Phone must not exceed 20 characters")
+    String phone,
+
+    @Size(max = 200, message = "Headline must not exceed 200 characters")
+    String headline,
+
     @Size(max = 500, message = "Expertise must not exceed 500 characters")
     String expertise,
 
     @Min(value = 0, message = "Experience years must be a positive number")
-    Integer experienceYears
+    Integer experienceYears,
+
+    @Size(max = 500, message = "Website URL must not exceed 500 characters")
+    String websiteUrl,
+
+    @Size(max = 500, message = "LinkedIn URL must not exceed 500 characters")
+    String linkedinUrl
 ) {
 }

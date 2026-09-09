@@ -9,6 +9,8 @@ import lombok.Builder;
 public record UserResponse(
     String id,
     String email,
+    @JsonProperty("full_name")
+    String fullName,
     RoleType role,
     UserStatus status,
     @JsonProperty("created_at")
