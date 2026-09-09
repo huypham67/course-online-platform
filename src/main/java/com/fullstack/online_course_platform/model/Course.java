@@ -86,6 +86,9 @@ public class Course extends BaseEntity {
     @Column(name = "published_at")
     private Instant publishedAt;
 
+    @Column(name = "rejection_reason", length = 500)
+    private String rejectionReason;
+
     @Builder.Default
     @ManyToMany
     @JoinTable(
@@ -109,31 +112,31 @@ public class Course extends BaseEntity {
         @OrderBy("sortOrder ASC")
     private List<CourseLearningOutcome> learningOutcomes = new ArrayList<>();
 
-        public void addCategory(Category category) {
-                categories.add(category);
-        }
+    public void addCategory(Category category) {
+            categories.add(category);
+    }
 
-        public void removeCategory(Category category) {
-                categories.remove(category);
-        }
+    public void removeCategory(Category category) {
+            categories.remove(category);
+    }
 
-        public void addRequirement(CourseRequirement requirement) {
-                requirements.add(requirement);
-                requirement.setCourse(this);
-        }
+    public void addRequirement(CourseRequirement requirement) {
+            requirements.add(requirement);
+            requirement.setCourse(this);
+    }
 
-        public void removeRequirement(CourseRequirement requirement) {
-                requirements.remove(requirement);
-                requirement.setCourse(null);
-        }
+    public void removeRequirement(CourseRequirement requirement) {
+            requirements.remove(requirement);
+            requirement.setCourse(null);
+    }
 
-        public void addLearningOutcome(CourseLearningOutcome learningOutcome) {
-                learningOutcomes.add(learningOutcome);
-                learningOutcome.setCourse(this);
-        }
+    public void addLearningOutcome(CourseLearningOutcome learningOutcome) {
+            learningOutcomes.add(learningOutcome);
+            learningOutcome.setCourse(this);
+    }
 
-        public void removeLearningOutcome(CourseLearningOutcome learningOutcome) {
-                learningOutcomes.remove(learningOutcome);
-                learningOutcome.setCourse(null);
-        }
+    public void removeLearningOutcome(CourseLearningOutcome learningOutcome) {
+            learningOutcomes.remove(learningOutcome);
+            learningOutcome.setCourse(null);
+    }
 }

@@ -31,12 +31,18 @@ public enum ErrorCode {
     ROLE_NOT_FOUND(404, "Role not found", HttpStatus.NOT_FOUND),
     LEARNER_NOT_FOUND(404, "Learner profile not found", HttpStatus.NOT_FOUND),
     INSTRUCTOR_NOT_FOUND(404, "Instructor profile not found", HttpStatus.NOT_FOUND),
+    COURSE_NOT_FOUND(404, "Course not found", HttpStatus.NOT_FOUND),
+    CATEGORY_NOT_FOUND(404, "Category not found", HttpStatus.NOT_FOUND),
 
     // 409 Conflict
     EMAIL_ALREADY_EXISTS(409, "Email is already in use", HttpStatus.CONFLICT),
     USER_ALREADY_EXISTS(409, "User already exists", HttpStatus.CONFLICT),
     INSTRUCTOR_ALREADY_APPROVED(409, "Instructor is already approved", HttpStatus.CONFLICT),
     INSTRUCTOR_NOT_PENDING(409, "Instructor is not in pending status", HttpStatus.CONFLICT),
+    COURSE_STATUS_CONFLICT(409, "Course status does not allow this operation", HttpStatus.CONFLICT),
+    CATEGORY_SLUG_ALREADY_EXISTS(409, "Category slug is already in use", HttpStatus.CONFLICT),
+    CATEGORY_IN_USE(409, "Category is assigned to one or more courses", HttpStatus.CONFLICT),
+    CATEGORY_HAS_CHILDREN(409, "Category has child categories", HttpStatus.CONFLICT),
 
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(500, "Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
