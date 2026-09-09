@@ -1,5 +1,6 @@
 package com.fullstack.online_course_platform.security;
 
+import com.fullstack.online_course_platform.common.enums.UserStatus;
 import com.fullstack.online_course_platform.exception.AppException;
 import com.fullstack.online_course_platform.exception.ErrorCode;
 import com.fullstack.online_course_platform.model.User;
@@ -28,10 +29,11 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         String roleName = user.getRole() != null ? "ROLE_" + user.getRole().getName() : "ROLE_LEARNER";
 
-        return new org.springframework.security.core.userdetails.User(
-                user.getEmail(),
-                user.getPasswordHash(),
-                Collections.singletonList(new SimpleGrantedAuthority(roleName))
-        );
+        return org.springframework.security.core.userdetails.User
+            .withUsername(user.getEmail())
+            .password(user.getPasswordHash())
+            .authorities(Collections.singletonList(new SimpleGrantedAuthority(roleName)))
+            .disabled(user.getStatus() != UserStatus.ACTIVE)
+            .build();
     }
 }

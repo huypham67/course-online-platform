@@ -9,6 +9,7 @@ import com.fullstack.online_course_platform.dto.request.UpdateInstructorRequest;
 import com.fullstack.online_course_platform.dto.response.AvatarResponse;
 import com.fullstack.online_course_platform.dto.response.InstructorResponse;
 import com.fullstack.online_course_platform.dto.response.InstructorStatusResponse;
+import com.fullstack.online_course_platform.dto.response.PageResponse;
 import com.fullstack.online_course_platform.dto.response.UserResponse;
 import com.fullstack.online_course_platform.exception.AppException;
 import com.fullstack.online_course_platform.exception.ErrorCode;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Pageable;
 
 import java.util.UUID;
 
@@ -156,6 +158,23 @@ public class InstructorServiceImpl implements InstructorService {
                 .instructorStatus(updatedInstructor.getStatus())
                 .build();
     }
+
+            @Override
+            @Transactional(readOnly = true)
+            public PageResponse<InstructorResponse> findInstructors(
+                String keyword, InstructorStatus status, Pageable pageable) {
+            return PageResponse.from(instructorRepository.search(keyword, status, pageable)
+                .map(instructor -> resolvePresignedAvatarUrl(
+                    instructorMapper.toInstructorResponse(instructor), instructor.getAvatarUrl())));
+            }
+
+            @Override
+            @Transactional(readOnly = true)
+            public InstructorResponse getInstructor(UUID instructorId) {
+            Instructor instructor = instructorRepository.findById(instructorId)
+                .orElseThrow(() -> new AppException(ErrorCode.INSTRUCTOR_NOT_FOUND));
+            return resolvePresignedAvatarUrl(instructorMapper.toInstructorResponse(instructor), instructor.getAvatarUrl());
+            }
 
     private InstructorResponse resolvePresignedAvatarUrl(InstructorResponse response, String avatarUrl) {
         if (avatarUrl == null || avatarUrl.isBlank()) {

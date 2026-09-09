@@ -40,9 +40,10 @@ public class AdminCourseController {
     public ApiResult<PageResponse<CourseSummaryResponse>> getCourses(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) CourseStatus status,
+            @RequestParam(required = false) UUID instructorId,
             @PageableDefault(size = 20, sort = "updatedAt") Pageable pageable) {
         return ApiResult.of(HttpStatus.OK, "Courses retrieved successfully",
-                courseService.findAdminCourses(keyword, status, pageable));
+                courseService.findAdminCourses(keyword, status, instructorId, pageable));
     }
 
     @GetMapping("/{courseId}")
@@ -64,6 +65,11 @@ public class AdminCourseController {
     @PostMapping("/{courseId}/pause")
     public ApiResult<CourseStatusResponse> pause(@PathVariable UUID courseId) {
         return statusResult("Course paused successfully", courseService.pauseCourse(courseId));
+    }
+
+    @PostMapping("/{courseId}/resume")
+    public ApiResult<CourseStatusResponse> resume(@PathVariable UUID courseId) {
+        return statusResult("Course resumed successfully", courseService.resumeCourse(courseId));
     }
 
     @PostMapping("/{courseId}/archive")

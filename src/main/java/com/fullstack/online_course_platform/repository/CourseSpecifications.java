@@ -45,6 +45,11 @@ public final class CourseSpecifications {
                 cb.equal(root.get("instructor").get("user").get("id"), userId);
     }
 
+    public static Specification<Course> byInstructorId(UUID instructorId) {
+        return instructorId == null ? null : (root, query, cb) ->
+                cb.equal(root.get("instructor").get("id"), instructorId);
+    }
+
     private static Specification<Course> keywordContains(String keyword) {
         if (keyword == null || keyword.isBlank()) {
             return null;

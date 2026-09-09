@@ -3,6 +3,8 @@ package com.fullstack.online_course_platform.service.impl;
 import com.fullstack.online_course_platform.common.enums.RoleType;
 import com.fullstack.online_course_platform.common.enums.UserStatus;
 import com.fullstack.online_course_platform.dto.response.UserResponse;
+import com.fullstack.online_course_platform.dto.response.PageResponse;
+import com.fullstack.online_course_platform.dto.response.UserStatusResponse;
 import com.fullstack.online_course_platform.exception.AppException;
 import com.fullstack.online_course_platform.exception.ErrorCode;
 import com.fullstack.online_course_platform.mapper.UserMapper;
@@ -11,10 +13,14 @@ import com.fullstack.online_course_platform.model.User;
 import com.fullstack.online_course_platform.repository.RoleRepository;
 import com.fullstack.online_course_platform.repository.UserRepository;
 import com.fullstack.online_course_platform.service.UserService;
+import com.fullstack.online_course_platform.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Pageable;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +30,7 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final TokenService tokenService;
 
     @Override
     @Transactional
@@ -47,5 +54,35 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         return userMapper.toUserResponse(userRepository.save(user));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<UserResponse> findUsers(String keyword, RoleType role, UserStatus status, Pageable pageable) {
+        String roleName = role == null ? null : role.name();
+        return PageResponse.from(userRepository.search(keyword, roleName, status, pageable).map(userMapper::toUserResponse));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponse getUser(UUID userId) {
+        return userMapper.toUserResponse(userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND)));
+    }
+
+    @Override
+    @Transactional
+    public UserStatusResponse updateStatus(UUID userId, UserStatus status) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        user.setStatus(status);
+        User saved = userRepository.save(user);
+        if (status == UserStatus.INACTIVE) {
+            tokenService.revokeActiveTokens(userId);
+        }
+        return UserStatusResponse.builder()
+                .id(saved.getId().toString())
+                .status(saved.getStatus())
+                .build();
     }
 }

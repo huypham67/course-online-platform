@@ -37,10 +37,12 @@ public interface CourseService {
     CourseStatusResponse pauseOwnCourse(UUID courseId);
     CourseStatusResponse resumeOwnCourse(UUID courseId);
     CourseStatusResponse archiveOwnCourse(UUID courseId);
-    PageResponse<CourseSummaryResponse> findAdminCourses(String keyword, CourseStatus status, Pageable pageable);
+        PageResponse<CourseSummaryResponse> findAdminCourses(
+            String keyword, CourseStatus status, UUID instructorId, Pageable pageable);
     CourseDetailResponse getAdminCourse(UUID courseId);
     CourseStatusResponse approveCourse(UUID courseId);
     CourseStatusResponse rejectCourse(UUID courseId, String reason);
     CourseStatusResponse pauseCourse(UUID courseId);
+    CourseStatusResponse resumeCourse(UUID courseId);
     CourseStatusResponse archiveCourse(UUID courseId);
 }

@@ -235,8 +235,9 @@ public class CourseServiceImpl implements CourseService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<CourseSummaryResponse> findAdminCourses(
-            String keyword, CourseStatus status, Pageable pageable) {
+            String keyword, CourseStatus status, UUID instructorId, Pageable pageable) {
         var specification = CourseSpecifications.filter(status, null, keyword, null, null, null, null, null);
+        specification = specification.and(CourseSpecifications.byInstructorId(instructorId));
         return PageResponse.from(courseRepository.findAll(specification, pageable).map(courseResponseMapper::toSummary));
     }
 
@@ -278,6 +279,15 @@ public class CourseServiceImpl implements CourseService {
         requireStatus(course, CourseStatus.PUBLISHED);
         course.setStatus(CourseStatus.PAUSED);
         return saveStatus(course, "paused by admin");
+    }
+
+    @Override
+    @Transactional
+    public CourseStatusResponse resumeCourse(UUID courseId) {
+        Course course = findCourse(courseId);
+        requireStatus(course, CourseStatus.PAUSED);
+        course.setStatus(CourseStatus.PUBLISHED);
+        return saveStatus(course, "resumed by admin");
     }
 
     @Override
