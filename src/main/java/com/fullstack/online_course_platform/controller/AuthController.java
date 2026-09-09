@@ -1,15 +1,19 @@
 package com.fullstack.online_course_platform.controller;
 
+import com.fullstack.online_course_platform.dto.request.ChangePasswordRequest;
+import com.fullstack.online_course_platform.dto.request.ForgotPasswordRequest;
 import com.fullstack.online_course_platform.dto.request.LoginRequest;
 import com.fullstack.online_course_platform.dto.request.RefreshTokenRequest;
 import com.fullstack.online_course_platform.dto.request.RegisterInstructorRequest;
 import com.fullstack.online_course_platform.dto.request.RegisterLearnerRequest;
+import com.fullstack.online_course_platform.dto.request.ResetPasswordRequest;
 import com.fullstack.online_course_platform.dto.response.ApiResult;
 import com.fullstack.online_course_platform.dto.response.TokenResponse;
 import com.fullstack.online_course_platform.dto.response.UserResponse;
 import com.fullstack.online_course_platform.service.AuthService;
 import com.fullstack.online_course_platform.service.InstructorService;
 import com.fullstack.online_course_platform.service.LearnerService;
+import com.fullstack.online_course_platform.service.PasswordResetService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,6 +24,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -34,6 +39,7 @@ public class AuthController {
     private final AuthService authService;
     private final LearnerService learnerService;
     private final InstructorService instructorService;
+    private final PasswordResetService passwordResetService;
 
     @PostMapping("/register/learner")
     @ResponseStatus(HttpStatus.CREATED)
@@ -92,6 +98,44 @@ public class AuthController {
     public ApiResult<TokenResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
         return ApiResult.of(HttpStatus.OK, "Token refreshed successfully", authService.refreshToken(request));
     }
+
+        @PutMapping("/password")
+        @Operation(summary = "Change password", description = "Changes the authenticated user's password and revokes all active refresh tokens.")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "Password changed successfully"),
+                        @ApiResponse(responseCode = "400", description = "Validation failed or current password is incorrect",
+                                        content = @Content(schema = @Schema(implementation = ApiResult.class))),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized",
+                                        content = @Content(schema = @Schema(implementation = ApiResult.class)))
+        })
+        public ApiResult<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+                authService.changePassword(request);
+                return ApiResult.of(HttpStatus.OK, "Password changed successfully", null);
+        }
+
+        @PostMapping("/forgot-password")
+        @Operation(summary = "Request password reset", description = "Sends password reset instructions when the email belongs to an account.")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "Request accepted"),
+                        @ApiResponse(responseCode = "400", description = "Validation failed",
+                                        content = @Content(schema = @Schema(implementation = ApiResult.class)))
+        })
+        public ApiResult<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+                passwordResetService.requestPasswordReset(request);
+                return ApiResult.of(HttpStatus.OK, "If the email exists, password reset instructions have been sent", null);
+        }
+
+        @PostMapping("/reset-password")
+        @Operation(summary = "Reset password", description = "Resets a password using a valid, unexpired, single-use reset token.")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "Password reset successfully"),
+                        @ApiResponse(responseCode = "400", description = "Validation failed or reset token is invalid",
+                                        content = @Content(schema = @Schema(implementation = ApiResult.class)))
+        })
+        public ApiResult<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+                passwordResetService.resetPassword(request);
+                return ApiResult.of(HttpStatus.OK, "Password reset successfully", null);
+        }
 
     @PostMapping("/logout")
     @Operation(summary = "Logout", description = "Revokes the current user's active refresh token.")

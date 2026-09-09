@@ -14,6 +14,9 @@ public enum ErrorCode {
     INVALID_BODY(400, "Malformed or missing request body", HttpStatus.BAD_REQUEST),
     INVALID_FILE_TYPE(400, "File type is not supported for this category", HttpStatus.BAD_REQUEST),
     FILE_SIZE_EXCEEDED(400, "File size exceeds the allowable limit for this category", HttpStatus.BAD_REQUEST),
+    INVALID_CURRENT_PASSWORD(400, "Current password is incorrect", HttpStatus.BAD_REQUEST),
+    NEW_PASSWORD_SAME_AS_CURRENT(400, "New password must differ from current password", HttpStatus.BAD_REQUEST),
+    INVALID_PASSWORD_RESET_TOKEN(400, "Invalid or expired password reset token", HttpStatus.BAD_REQUEST),
 
     // 401 Unauthorized
     UNAUTHORIZED(401, "Unauthorized", HttpStatus.UNAUTHORIZED),

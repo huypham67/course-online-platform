@@ -2,6 +2,7 @@ package com.fullstack.online_course_platform.service.impl;
 
 import com.fullstack.online_course_platform.common.enums.UserStatus;
 import com.fullstack.online_course_platform.common.utils.SecurityUtils;
+import com.fullstack.online_course_platform.dto.request.ChangePasswordRequest;
 import com.fullstack.online_course_platform.dto.request.LoginRequest;
 import com.fullstack.online_course_platform.dto.request.RefreshTokenRequest;
 import com.fullstack.online_course_platform.dto.response.TokenResponse;
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
@@ -52,6 +55,26 @@ public class AuthServiceImpl implements AuthService {
 
         log.info("Refresh token rotation succeeded: userId={}", user.getId());
         return tokenService.createTokenResponse(user);
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(ChangePasswordRequest request) {
+        var userId = SecurityUtils.getCurrentUserId();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw new AppException(ErrorCode.INVALID_CURRENT_PASSWORD);
+        }
+        if (passwordEncoder.matches(request.newPassword(), user.getPasswordHash())) {
+            throw new AppException(ErrorCode.NEW_PASSWORD_SAME_AS_CURRENT);
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+        tokenService.revokeActiveTokens(userId);
+        log.info("Password changed successfully: userId={}", userId);
     }
 
     @Override
