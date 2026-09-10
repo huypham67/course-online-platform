@@ -13,7 +13,13 @@
     { "key": "instructorPassword", "value": "Password123" },
     { "key": "accessToken", "value": "" },
     { "key": "refreshToken", "value": "" },
-    { "key": "instructorId", "value": "replace-with-instructor-uuid" }
+    { "key": "instructorId", "value": "replace-with-instructor-uuid" },
+    { "key": "instructorToken", "value": "" },
+    { "key": "adminToken", "value": "" },
+    { "key": "courseId", "value": "" },
+    { "key": "courseSlug", "value": "" },
+    { "key": "categoryId", "value": "" },
+    { "key": "categorySlug", "value": "java" }
   ],
   "item": [
     {
@@ -175,7 +181,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Returns 204 No Content', function () { pm.response.to.have.status(204); });"
+                  "pm.test('Returns 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.expect(pm.response.json().data).to.eql(null);"
                 ]
               }
             }
@@ -224,7 +231,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Returns 204 No Content', function () { pm.response.to.have.status(204); });"
+                  "pm.test('Returns 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.expect(pm.response.json().data).to.eql(null);"
                 ]
               }
             }
@@ -267,6 +275,295 @@
               }
             }
           ]
+        }
+      ]
+    },
+    {
+      "name": "Course Public",
+      "item": [
+        {
+          "name": "Browse published courses",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/courses?page=0&size=20&category={{categorySlug}}"
+          }
+        },
+        {
+          "name": "Get published course",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/courses/{{courseSlug}}" }
+        },
+        {
+          "name": "Get category tree",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/categories" }
+        },
+        {
+          "name": "Get category",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/categories/{{categorySlug}}" }
+        },
+        {
+          "name": "Get category courses",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/categories/{{categorySlug}}/courses?page=0&size=20"
+          }
+        },
+        {
+          "name": "Get public instructor",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/instructors/{{instructorId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Course Instructor",
+      "item": [
+        {
+          "name": "Create course",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{instructorToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Spring Boot Masterclass\",\n  \"shortDescription\": \"Build production-ready backend applications.\",\n  \"description\": \"Learn Spring Boot, PostgreSQL, Redis and Kafka.\",\n  \"price\": 499000,\n  \"level\": \"INTERMEDIATE\",\n  \"language\": \"Vietnamese\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/instructor/courses"
+          }
+        },
+        {
+          "name": "List my courses",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{instructorToken}}" }],
+            "url": "{{baseUrl}}/api/v1/instructor/courses?page=0&size=20"
+          }
+        },
+        {
+          "name": "Get my course",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{instructorToken}}" }],
+            "url": "{{baseUrl}}/api/v1/instructor/courses/{{courseId}}"
+          }
+        },
+        {
+          "name": "Update course",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{instructorToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Complete backend course with Spring Boot and PostgreSQL.\",\n  \"price\": 499000\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/instructor/courses/{{courseId}}"
+          }
+        },
+        {
+          "name": "Replace categories",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{instructorToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"categoryIds\": [\"{{categoryId}}\"]\n}" },
+            "url": "{{baseUrl}}/api/v1/instructor/courses/{{courseId}}/categories"
+          }
+        },
+        {
+          "name": "Replace requirements",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{instructorToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [{\"content\":\"Basic Java knowledge\",\"sortOrder\":0}]\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/instructor/courses/{{courseId}}/requirements"
+          }
+        },
+        {
+          "name": "Replace learning outcomes",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{instructorToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [{\"content\":\"Build REST APIs with Spring Boot\",\"sortOrder\":0}]\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/instructor/courses/{{courseId}}/learning-outcomes"
+          }
+        },
+        {
+          "name": "Update thumbnail",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{instructorToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"thumbnail_url\": \"courses/thumbnails/spring-boot.png\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/instructor/courses/{{courseId}}/thumbnail"
+          }
+        },
+        {
+          "name": "Submit for review",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{instructorToken}}" }],
+            "url": "{{baseUrl}}/api/v1/instructor/courses/{{courseId}}/submit-review"
+          }
+        },
+        {
+          "name": "Pause course",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{instructorToken}}" }],
+            "url": "{{baseUrl}}/api/v1/instructor/courses/{{courseId}}/pause"
+          }
+        },
+        {
+          "name": "Resume course",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{instructorToken}}" }],
+            "url": "{{baseUrl}}/api/v1/instructor/courses/{{courseId}}/resume"
+          }
+        },
+        {
+          "name": "Archive course",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{instructorToken}}" }],
+            "url": "{{baseUrl}}/api/v1/instructor/courses/{{courseId}}/archive"
+          }
+        },
+        {
+          "name": "Delete draft course",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{instructorToken}}" }],
+            "url": "{{baseUrl}}/api/v1/instructor/courses/{{courseId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Course and Category",
+      "item": [
+        {
+          "name": "List courses",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/courses?page=0&size=20&status=PENDING_REVIEW"
+          }
+        },
+        {
+          "name": "Get course",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/courses/{{courseId}}"
+          }
+        },
+        {
+          "name": "Approve course",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/courses/{{courseId}}/approve"
+          }
+        },
+        {
+          "name": "Reject course",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Course description needs more detail\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/admin/courses/{{courseId}}/reject"
+          }
+        },
+        {
+          "name": "Pause course",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/courses/{{courseId}}/pause"
+          }
+        },
+        {
+          "name": "Resume course",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/courses/{{courseId}}/resume"
+          }
+        },
+        {
+          "name": "Archive course",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/courses/{{courseId}}/archive"
+          }
+        },
+        {
+          "name": "Create category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Java\",\n  \"slug\": \"java\",\n  \"description\": \"Java courses\",\n  \"parentId\": null\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/admin/categories"
+          }
+        },
+        {
+          "name": "Update category",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Java ecosystem courses\",\n  \"clearParent\": false\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/admin/categories/{{categoryId}}"
+          }
+        },
+        {
+          "name": "Delete category",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/categories/{{categoryId}}"
+          }
         }
       ]
     }

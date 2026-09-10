@@ -40,15 +40,15 @@ public class AdminCategoryController {
     }
 
     @PatchMapping("/{categoryId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateCategory(@PathVariable UUID categoryId,
+    public ApiResult<Void> updateCategory(@PathVariable UUID categoryId,
                                @Valid @RequestBody UpdateCategoryRequest request) {
         categoryService.updateCategory(categoryId, request);
+        return ApiResult.of(HttpStatus.OK, "Category updated successfully", null);
     }
 
     @DeleteMapping("/{categoryId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCategory(@PathVariable UUID categoryId) {
+    public ApiResult<Void> deleteCategory(@PathVariable UUID categoryId) {
         categoryService.deleteCategory(categoryId);
+        return ApiResult.of(HttpStatus.OK, "Category deleted successfully", null);
     }
 }

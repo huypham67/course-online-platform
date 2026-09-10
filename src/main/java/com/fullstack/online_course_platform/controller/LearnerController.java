@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -48,19 +47,20 @@ public class LearnerController {
         return ApiResult.of(HttpStatus.OK, "Learner profile retrieved successfully", learnerService.getCurrentProfile());
     }
 
-        @PatchMapping("/me")
+    @PatchMapping("/me")
     @PreAuthorize("hasRole('LEARNER')")
     @Operation(summary = "Update current learner profile", description = "Update the authenticated learner profile")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Profile updated successfully"),
+            @ApiResponse(responseCode = "200", description = "Profile updated successfully",
+                    content = @Content(schema = @Schema(implementation = ApiResult.class))),
             @ApiResponse(responseCode = "400", description = "Validation failed",
                     content = @Content(schema = @Schema(implementation = ApiResult.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized",
                     content = @Content(schema = @Schema(implementation = ApiResult.class)))
     })
-        @ResponseStatus(HttpStatus.NO_CONTENT)
-        public void updateCurrentProfile(@Valid @RequestBody UpdateLearnerRequest request) {
+        public ApiResult<Void> updateCurrentProfile(@Valid @RequestBody UpdateLearnerRequest request) {
                 learnerService.updateCurrentProfile(request);
+                return ApiResult.of(HttpStatus.OK, "Learner profile updated successfully", null);
     }
 
     @PatchMapping("/me/avatar")

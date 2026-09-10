@@ -71,41 +71,41 @@ public class InstructorCourseController {
     }
 
     @PatchMapping("/{courseId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Update draft or rejected course")
-    public void updateCourse(@PathVariable UUID courseId, @Valid @RequestBody UpdateCourseRequest request) {
+    public ApiResult<Void> updateCourse(@PathVariable UUID courseId, @Valid @RequestBody UpdateCourseRequest request) {
         courseService.updateCourse(courseId, request);
+        return ApiResult.of(HttpStatus.OK, "Course updated successfully", null);
     }
 
     @DeleteMapping("/{courseId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete draft course")
-    public void deleteCourse(@PathVariable UUID courseId) {
+    public ApiResult<Void> deleteCourse(@PathVariable UUID courseId) {
         courseService.deleteDraft(courseId);
+        return ApiResult.of(HttpStatus.OK, "Draft course deleted successfully", null);
     }
 
     @PutMapping("/{courseId}/categories")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Replace course categories")
-    public void replaceCategories(@PathVariable UUID courseId,
+    public ApiResult<Void> replaceCategories(@PathVariable UUID courseId,
                                   @Valid @RequestBody CourseCategoriesRequest request) {
         courseService.replaceCategories(courseId, request);
+        return ApiResult.of(HttpStatus.OK, "Course categories updated successfully", null);
     }
 
     @PutMapping("/{courseId}/requirements")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Replace course requirements")
-    public void replaceRequirements(@PathVariable UUID courseId,
+    public ApiResult<Void> replaceRequirements(@PathVariable UUID courseId,
                                     @Valid @RequestBody CourseItemsRequest request) {
         courseService.replaceRequirements(courseId, request);
+        return ApiResult.of(HttpStatus.OK, "Course requirements updated successfully", null);
     }
 
     @PutMapping("/{courseId}/learning-outcomes")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Replace course learning outcomes")
-    public void replaceLearningOutcomes(@PathVariable UUID courseId,
+    public ApiResult<Void> replaceLearningOutcomes(@PathVariable UUID courseId,
                                         @Valid @RequestBody CourseItemsRequest request) {
         courseService.replaceLearningOutcomes(courseId, request);
+        return ApiResult.of(HttpStatus.OK, "Course learning outcomes updated successfully", null);
     }
 
     @PatchMapping("/{courseId}/thumbnail")

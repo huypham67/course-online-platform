@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -31,8 +30,8 @@ public class UserController {
     }
 
     @PatchMapping("/me")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateCurrentUser(@Valid @RequestBody UpdateCurrentUserRequest request) {
+    public ApiResult<Void> updateCurrentUser(@Valid @RequestBody UpdateCurrentUserRequest request) {
         userService.updateCurrentUser(request);
+        return ApiResult.of(HttpStatus.OK, "Current user updated successfully", null);
     }
 }
