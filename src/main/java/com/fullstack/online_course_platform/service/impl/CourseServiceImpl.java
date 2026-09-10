@@ -61,7 +61,9 @@ public class CourseServiceImpl implements CourseService {
             BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
         var specification = CourseSpecifications.filter(
                 CourseStatus.PUBLISHED, null, keyword, category, level, language, minPrice, maxPrice);
-        specification = specification.and(CourseSpecifications.byInstructorId(instructorId));
+        if (instructorId != null) {
+            specification = specification.and(CourseSpecifications.byInstructorId(instructorId));
+        }
         return PageResponse.from(courseRepository.findAll(specification, pageable).map(courseResponseMapper::toSummary));
     }
 
@@ -238,7 +240,9 @@ public class CourseServiceImpl implements CourseService {
     public PageResponse<CourseSummaryResponse> findAdminCourses(
             String keyword, CourseStatus status, UUID instructorId, Pageable pageable) {
         var specification = CourseSpecifications.filter(status, null, keyword, null, null, null, null, null);
-        specification = specification.and(CourseSpecifications.byInstructorId(instructorId));
+        if (instructorId != null) {
+            specification = specification.and(CourseSpecifications.byInstructorId(instructorId));
+        }
         return PageResponse.from(courseRepository.findAll(specification, pageable).map(courseResponseMapper::toSummary));
     }
 

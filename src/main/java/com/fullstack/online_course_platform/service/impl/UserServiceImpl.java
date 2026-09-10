@@ -49,7 +49,7 @@ public class UserServiceImpl implements UserService {
 
         User user = User.builder()
                 .email(email)
-            .fullName(fullName)
+                .fullName(fullName)
                 .passwordHash(passwordEncoder.encode(password))
                 .role(role)
                 .status(UserStatus.ACTIVE)

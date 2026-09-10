@@ -8,7 +8,9 @@ import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public final class CourseSpecifications {
 
@@ -24,7 +26,7 @@ public final class CourseSpecifications {
             String language,
             BigDecimal minPrice,
             BigDecimal maxPrice) {
-        return Specification.allOf(
+        return Specification.allOf(Stream.of(
                 equalStatus(status),
                 ownedBy(instructorUserId),
                 keywordContains(keyword),
@@ -33,7 +35,9 @@ public final class CourseSpecifications {
                 equalLanguage(language),
                 priceAtLeast(minPrice),
                 priceAtMost(maxPrice)
-        );
+            )
+            .filter(Objects::nonNull)
+            .toList());
     }
 
     private static Specification<Course> equalStatus(CourseStatus status) {
